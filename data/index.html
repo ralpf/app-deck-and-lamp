@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP32 Lamp</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header><h1>ESP32 "Blazar" Lamp</h1></header>
+  <main>
+    <div class="mode-selector">
+      <label for="mode">Lamp Mode</label>
+      <select id="mode">
+        <option value="mood"selected>Mood</option>
+        <option value="hsv">HSV</option>
+        <option value="rgb">RGB</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div id="controls">
+      <!-- Controls dynamically loaded by JavaScript -->
+    </div>
+    <script src="script.js"></script>
+  </main>
+</body>
+</html>

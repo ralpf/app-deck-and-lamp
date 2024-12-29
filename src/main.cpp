@@ -1,16 +1,21 @@
-#include <FastLED.h>
+#include <FS.h>
+#include <SPIFFS.h>
 #include <WebServer.h>
+#include <FastLED.h>
 #include "PrintHelper.h"
 #include "Types.h"
 
 const char *ssid = "StarNet - munteanu.v84";
 const char *password = "48575443A95B41AA";
 
-#define VERSION "0.5.1"
+#define VERSION "0.6.1"
 #define LED_PIN 14 // GPIO14 as your data pin
 #define NUM_LEDS 12
 #define NUM_COL 6
 
+String index_html;
+String style_css;
+String script_js;
 
 CRGB active = CRGB::Azure;
 ui8 mode;
@@ -36,11 +41,13 @@ void ActionError();
 // Convert HTML color string (#RRGGBB) to CRGB
 CRGB htmlToCRGB(String htmlColor)
 {
-    if (htmlColor.length() != 6)
+    int len = htmlColor.length();
+    if (len != 6 && len != 7)
     {
         SPrint("Err: can't parse html color '%s'", htmlColor);
         return CRGB::Red;
     }
+    if (len == 7) htmlColor = htmlColor.substring(1, 7);
 
     int r = strtol(htmlColor.substring(0, 2).c_str(), NULL, 16);
     int g = strtol(htmlColor.substring(2, 4).c_str(), NULL, 16);
@@ -49,16 +56,31 @@ CRGB htmlToCRGB(String htmlColor)
     return CRGB(r, g, b);
 }
 
+//..................................................................................HELPERS
+
+void send_OK(String message) { server.send(200, "text/plain", message); }
+
+void send_Fail(String message) { server.send(400, "text/plain", message); }
+
 //..................................................................................HANDLES
 
-void handleRoot()
+void handleRoot() { server.send(200, "text/html", index_html); }
+
+void handleCSS() { server.send(200, "text/css", style_css); }
+
+void handleJS() { server.send(200, "application/javascript", script_js); }
+
+void handleMood()
 {
-    String html = "<html><body>";
-    html += "<h1>ESP32 Web Server</h1>";
-    html += "<p>Lev Discobal LEDs v" + String(VERSION) + "</p>";
-    html += "<p>Baud rate = " + String(PRINTER_BAUD) + "</p>";
-    html += "</body></html>";
-    server.send(200, "text/html", html);
+    if (server.hasArg("color") == false)
+    {
+        send_Fail("ERR: no expected param 'color'");
+        return;
+    }
+
+    active = htmlToCRGB(server.arg("color"));
+    mode = 2;
+    send_OK("OK");
 }
 
 void handleSetOne()
@@ -78,7 +100,6 @@ void handleSetOne()
     }
 }
 
-
 void handleGlobal()
 {
     if (server.hasArg("bright"))
@@ -88,7 +109,6 @@ void handleGlobal()
         server.send(200, "text/plain", "Global Brighntess set to " + String(br));
     }
 }
-
 
 void handleModeFixed()
 {
@@ -130,43 +150,98 @@ void handleModeRunning()
     }
     if (server.hasArg("color"))
     {
-        active = htmlToCRGB( server.arg("color") );
+        active = htmlToCRGB(server.arg("color"));
         server.send(200, "text/plain", "Color set to " + server.arg("color"));
     }
     server.send(200, "text/plain", "Mode set to Running");
     mode = 0;
 }
 
-//.........................................................................................ESP
+//........................................................................................INIT
 
-void setup()
+void initWiFi()
 {
-    FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS);
-    SPrint("\nStarting Levitating Disco Ball Leds\nVersion %s\n", VERSION);
-
     WiFi.begin(ssid, password);
-
     Serial.print("Connecting to WiFi");
     while (WiFi.status() != WL_CONNECTED)
     {
         delay(500);
         Serial.print(".");
     }
-
-    Serial.println("\nWiFi connected.");
-    Serial.print("IP Address: ");
+    Serial.print("\nWiFi Connected OK IP=");
     Serial.println(WiFi.localIP());
+    Serial.println();
+}
 
-    // Set up web server routes
+void initFileData()
+{
+    if (SPIFFS.begin(true) == false)
+    {
+        Serial.println("An error has occurred while mounting SPIFFS");
+        return;
+    }
+
+    Serial.println("SPIFFS FS mounted successfully");
+    Serial.println("Listing SPIFFS files:");
+
+    File root = SPIFFS.open("/");
+    File file = root.openNextFile();
+    // ??? ok to not close files ?
+    while (file)
+    {
+        Serial.print("File: ");
+        Serial.print(file.name());
+        Serial.print(", Size: ");
+        Serial.println(file.size());
+        file = root.openNextFile();
+    }
+
+    // Load index.html
+    file = SPIFFS.open("/index.html", "r");
+    index_html = file.readString();
+    file.close();
+
+    // Load style.css
+    file = SPIFFS.open("/style.css", "r");
+    style_css = file.readString();
+    file.close();
+
+    // Load script.js
+    file = SPIFFS.open("/script.js", "r");
+    script_js = file.readString();
+    file.close();
+
+    Serial.println("OK Loading index.html, script.js, style.css\n");
+}
+
+void initWebServer()
+{
     server.on("/", handleRoot);
+    server.on("/style.css", handleCSS);
+    server.on("/script.js", handleJS);
+
     server.on("/global", handleGlobal);
     server.on("/fixed", handleModeFixed);
     server.on("/run", handleModeRunning);
     server.on("/random", handleModeRandom);
+    server.on("/mood", handleMood);
 
     // Start the server
     server.begin();
-    Serial.println("Web server started.");
+    Serial.println("Web server started OK");
+}
+
+//.........................................................................................ESP
+
+void setup()
+{
+    // Fast LED
+    FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS);
+    SPrint("\nStarting Levitating Disco Ball Leds\nVersion %s\n", VERSION);
+
+    initFileData();
+    initWiFi();
+    initWebServer();
 
     mode = 0;
     active = CRGB::MediumSeaGreen;
@@ -178,15 +253,21 @@ void loop()
     server.handleClient();
     switch (mode)
     {
-        case 0:  ActionRunningDotFade();    break;
-        case 1:  ActionRandomColor();       break;
-        case 2:  ActionFixedColor();        break;
-        default: ActionError();
+    case 0:
+        ActionRunningDotFade();
+        break;
+    case 1:
+        ActionRandomColor();
+        break;
+    case 2:
+        ActionFixedColor();
+        break;
+    default:
+        ActionError();
     }
 }
 
 //......................................................................LED
-
 
 void ActionRunningDotFade()
 {
@@ -204,14 +285,12 @@ void ActionRunningDotFade()
     FastLED.show();
 }
 
-
 void ActionFixedColor()
 {
     for (ui8 i = 0; i < NUM_LEDS; ++i)
         leds[i] = active;
     FastLED.show();
 }
-
 
 void ActionRandomColor()
 {
@@ -230,9 +309,9 @@ void ActionRandomColor()
     FastLED.show();
 }
 
-
 void ActionError()
 {
+    // ??? lit them in a pattern
     for (ui8 i = 0; i < 6; ++i)
         leds[i + (i % 2 ? 1 : 0)] = CRGB::Pink;
     FastLED.show();
