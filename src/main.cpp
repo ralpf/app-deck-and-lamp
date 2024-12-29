@@ -9,9 +9,29 @@ const char *password = "48575443A95B41AA";
 #define VERSION "0.5.1"
 #define LED_PIN 14 // GPIO14 as your data pin
 #define NUM_LEDS 12
+#define NUM_COL 6
+
+
+CRGB active = CRGB::Azure;
+ui8 mode;
+
+ui32 runningDelay = 1000;
+ui8 runningFade = 1;
+
+ui32 randomDelay = 400;
+ui8 randomFade = 1;
 
 CRGB leds[NUM_LEDS];
 WebServer server(80); // HTTP server on port 80
+
+//............................................................................FORWARD DECLARATION
+
+void ActionRunningDotFade();
+void ActionRandomColor();
+void ActionFixedColor();
+void ActionError();
+
+//...............................................................................................
 
 // Convert HTML color string (#RRGGBB) to CRGB
 CRGB htmlToCRGB(String htmlColor)
@@ -29,7 +49,8 @@ CRGB htmlToCRGB(String htmlColor)
     return CRGB(r, g, b);
 }
 
-// Handle root URL
+//..................................................................................HANDLES
+
 void handleRoot()
 {
     String html = "<html><body>";
@@ -58,22 +79,65 @@ void handleSetOne()
 }
 
 
-void handleSetAll()
+void handleGlobal()
+{
+    if (server.hasArg("bright"))
+    {
+        ui8 br = server.arg("bright").toInt();
+        FastLED.setBrightness(br);
+        server.send(200, "text/plain", "Global Brighntess set to " + String(br));
+    }
+}
+
+
+void handleModeFixed()
 {
     if (server.hasArg("color"))
     {
-        CRGB c = htmlToCRGB(server.arg("color"));
-        for (ui8 i = 0; i < NUM_LEDS; ++i)
-            leds[i] = c;
-        FastLED.show();
+        active = htmlToCRGB(server.arg("color"));
         server.send(200, "text/plain", "LED ALL set to " + server.arg("color"));
-        SPrint("set color %s", server.arg("color"));
     }
-    else
-    {
-        server.send(400, "text/plain", "Missing parameter. Use color=RRGGBB");
-    }
+    mode = 2;
 }
+
+void handleModeRandom()
+{
+    if (server.hasArg("delay"))
+    {
+        randomDelay = server.arg("delay").toInt();
+        server.send(200, "text/plain", "Random Mode set delay to " + String(randomDelay));
+    }
+    if (server.hasArg("fade"))
+    {
+        randomFade = server.arg("fade").toInt();
+        server.send(200, "text/plain", "Random Mode set fade to " + String(randomFade));
+    }
+    server.send(200, "text/plain", "Mode set to Random");
+    mode = 1;
+}
+
+void handleModeRunning()
+{
+    if (server.hasArg("delay"))
+    {
+        runningDelay = server.arg("delay").toInt();
+        server.send(200, "text/plain", "Running Mode set delay to " + String(runningDelay));
+    }
+    if (server.hasArg("fade"))
+    {
+        runningFade = server.arg("fade").toInt();
+        server.send(200, "text/plain", "Running Mode set fade to " + String(runningFade));
+    }
+    if (server.hasArg("color"))
+    {
+        active = htmlToCRGB( server.arg("color") );
+        server.send(200, "text/plain", "Color set to " + server.arg("color"));
+    }
+    server.send(200, "text/plain", "Mode set to Running");
+    mode = 0;
+}
+
+//.........................................................................................ESP
 
 void setup()
 {
@@ -95,37 +159,81 @@ void setup()
 
     // Set up web server routes
     server.on("/", handleRoot);
-    server.on("/setOne", handleSetOne);
-    server.on("/setAll", handleSetAll);
+    server.on("/global", handleGlobal);
+    server.on("/fixed", handleModeFixed);
+    server.on("/run", handleModeRunning);
+    server.on("/random", handleModeRandom);
 
     // Start the server
     server.begin();
     Serial.println("Web server started.");
 
-    for (int i = 0; i < NUM_LEDS; ++i)
-        leds[i] = CRGB::Red;
-    FastLED.show();
+    mode = 0;
+    active = CRGB::MediumSeaGreen;
 }
 
 void loop()
 {
     delay(10);
     server.handleClient();
+    switch (mode)
+    {
+        case 0:  ActionRunningDotFade();    break;
+        case 1:  ActionRandomColor();       break;
+        case 2:  ActionFixedColor();        break;
+        default: ActionError();
+    }
 }
 
+//......................................................................LED
 
-void cycleLedsWithFade()
+
+void ActionRunningDotFade()
 {
     static int idx = 0;
     static ui32 stime;
 
-    if (millis() - stime > 1000)
+    if (millis() - stime > runningDelay)
     {
         stime = millis();
-        leds[idx] = CRGB::Green;
-        idx = ++idx % NUM_LEDS;
+        leds[idx * 2] = leds[idx * 2 + 1] = active;
+        idx = ++idx % NUM_COL;
     }
 
-    fadeToBlackBy(leds, NUM_LEDS, 1);
+    fadeToBlackBy(leds, NUM_LEDS, runningFade);
+    FastLED.show();
+}
+
+
+void ActionFixedColor()
+{
+    for (ui8 i = 0; i < NUM_LEDS; ++i)
+        leds[i] = active;
+    FastLED.show();
+}
+
+
+void ActionRandomColor()
+{
+    static ui32 stime;
+
+    if (millis() - stime > randomDelay)
+    {
+        stime = millis();
+        int idx = random(0, 6);
+        leds[idx * 2] = CHSV(random8(), 255, 255);
+        leds[idx * 2 + 1] = CHSV(random8(), 255, 255);
+    }
+
+    if (randomFade == 1)
+        fadeToBlackBy(leds, NUM_LEDS, runningFade);
+    FastLED.show();
+}
+
+
+void ActionError()
+{
+    for (ui8 i = 0; i < 6; ++i)
+        leds[i + (i % 2 ? 1 : 0)] = CRGB::Pink;
     FastLED.show();
 }
