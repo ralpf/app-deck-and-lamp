@@ -8,6 +8,11 @@ const char *password = "48575443A95B41AA";
 
 WebServer server(80);
 
+String index_html;
+String style_css;
+String script_js;
+
+
 //..................................................................................
 
 void readFile(const char* path, String& target);

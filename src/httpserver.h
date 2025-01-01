@@ -2,6 +2,8 @@
 
 #include <WebServer.h>
 #include <SPIFFS.h>
+#include <FS.h>
+
 
 
 extern WebServer server;
