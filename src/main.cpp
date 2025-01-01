@@ -1,12 +1,9 @@
 #include <FS.h>
-#include <SPIFFS.h>
-#include <WebServer.h>
+
 #include <FastLED.h>
 #include "PrintHelper.h"
 #include "Types.h"
-
-const char *ssid = "StarNet - munteanu.v84";
-const char *password = "48575443A95B41AA";
+#include "httpserver.h"
 
 #define VERSION "0.6.1"
 #define LED_PIN 14 // GPIO14 as your data pin
@@ -27,7 +24,6 @@ ui32 randomDelay = 400;
 ui8 randomFade = 1;
 
 CRGB leds[NUM_LEDS];
-WebServer server(80); // HTTP server on port 80
 
 //............................................................................FORWARD DECLARATION
 
@@ -159,60 +155,9 @@ void handleModeRunning()
 
 //........................................................................................INIT
 
-void initWiFi()
-{
-    WiFi.begin(ssid, password);
-    Serial.print("Connecting to WiFi");
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(500);
-        Serial.print(".");
-    }
-    Serial.print("\nWiFi Connected OK IP=");
-    Serial.println(WiFi.localIP());
-    Serial.println();
-}
 
-void initFileData()
-{
-    if (SPIFFS.begin(true) == false)
-    {
-        Serial.println("An error has occurred while mounting SPIFFS");
-        return;
-    }
 
-    Serial.println("SPIFFS FS mounted successfully");
-    Serial.println("Listing SPIFFS files:");
 
-    File root = SPIFFS.open("/");
-    File file = root.openNextFile();
-    // ??? ok to not close files ?
-    while (file)
-    {
-        Serial.print("File: ");
-        Serial.print(file.name());
-        Serial.print(", Size: ");
-        Serial.println(file.size());
-        file = root.openNextFile();
-    }
-
-    // Load index.html
-    file = SPIFFS.open("/index.html", "r");
-    index_html = file.readString();
-    file.close();
-
-    // Load style.css
-    file = SPIFFS.open("/style.css", "r");
-    style_css = file.readString();
-    file.close();
-
-    // Load script.js
-    file = SPIFFS.open("/script.js", "r");
-    script_js = file.readString();
-    file.close();
-
-    Serial.println("OK Loading index.html, script.js, style.css\n");
-}
 
 void initWebServer()
 {
@@ -239,8 +184,8 @@ void setup()
     FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS);
     SPrint("\nStarting Levitating Disco Ball Leds\nVersion %s\n", VERSION);
 
-    initFileData();
-    initWiFi();
+    InitWiFiServer(201);      // ip adress 201
+    InitHttpFrontend();
     initWebServer();
 
     mode = 0;
