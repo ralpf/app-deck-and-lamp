@@ -1,12 +1,13 @@
 
 #include <FastLED.h>
+#include <ArduinoOTA.h>
 #include "PrintHelper.h"
 
 #include "httpserver.h"
 #include "backend.h"
 #include "state.h"
 
-#define VERSION "0.7.1"
+#define VERSION "0.7.3"
 #define LED_PIN 14 // GPIO14 as your data pin
 #define NUM_LEDS 12
 #define NUM_COL 6
@@ -50,11 +51,15 @@ void setup()
     fill_solid(leds, NUM_LEDS, CRGB::Green);
     FastLED.setBrightness(app.brightness);
     FastLED.show();
+    SPrint("OK: FastLED %i leds on pin %i\n", NUM_LEDS, LED_PIN);
     // Init HTTP
     InitWiFiServer(201);      // ip adress 201
     InitHttpFrontend();
     InitBackend();
     InitState();
+    // init OTA
+    ArduinoOTA.begin();
+    SPrint("OK: OTA ready\n");
 }
 
 void loop()
@@ -62,6 +67,7 @@ void loop()
     delay(10);
 
     server.handleClient();
+    ArduinoOTA.handle();
     FastLED.setBrightness(app.brightness);
 
     switch (app.curr_mode)
@@ -125,7 +131,6 @@ CRGB FlickerColor(const CRGB col)
     CHSV hsv = rgb2hsv_approximate(col);
     ui8 h = SampleNoise(app.mode_Mood.noiseHue, hsv.h, true);
     ui8 v = SampleNoise(app.mode_Mood.noiseBrt, hsv.v, false);
-    if (++ii % 20 == 0) SPrint("H=%i | V=%i", h, v);
     return CHSV(h, hsv.s, v);
 }
 
