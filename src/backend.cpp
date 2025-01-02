@@ -80,9 +80,23 @@ void handle_mode_Mood()
 {
     String html_color;
     if (tryServerArgS("color", html_color))
-    {
         app.mode_Mood.color32 = html_2_UI32(html_color);
-    }
+
+    int i = 0;
+    if (tryServerArgI("isFliker", i))
+        app.mode_Mood.is_fliker = i != 0;
+
+    if (tryServerArgI("hue_ampl", i))
+        app.mode_Mood.noiseHue.ampl = i;
+
+    if (tryServerArgI("brt_ampl", i))
+        app.mode_Mood.noiseBrt.ampl = i;
+
+    if (tryServerArgI("hue_ts", i))
+        app.mode_Mood.noiseHue.timeScale = i / 1000.0;
+
+    if (tryServerArgI("brt_ts", i))
+        app.mode_Mood.noiseBrt.timeScale = i / 1000.0;
 
     app.curr_mode = 0;
     send_OK("OK mode Mood");

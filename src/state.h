@@ -2,9 +2,20 @@
 #include "Types.h"
 
 
+struct CmpNoise
+{
+    float timeScale = 1;
+    ui8   ampl      = 80;
+    ui16  offset    = 0;
+};
+
+
 struct ModeMood
 {
     ui32 color32 = 0x00FF00FF;
+    bool is_fliker;
+    CmpNoise noiseBrt;
+    CmpNoise noiseHue;
 };
 
 

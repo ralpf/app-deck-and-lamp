@@ -6,7 +6,7 @@
 #include "backend.h"
 #include "state.h"
 
-#define VERSION "0.7.0"
+#define VERSION "0.7.1"
 #define LED_PIN 14 // GPIO14 as your data pin
 #define NUM_LEDS 12
 #define NUM_COL 6
@@ -20,6 +20,23 @@ void Action_ConnectingToWiFi();
 void Action_Mode_Mood();
 void Action_Mode_Random();
 
+ui8 SampleNoise(const CmpNoise& noise, ui8 value);
+CRGB FlickerColor(const CRGB col);
+
+
+//.......................................................................................STATE
+
+void InitState()
+{
+    app.mode_Mood.is_fliker = true;
+
+    app.mode_Mood.noiseBrt.ampl = 80;
+    app.mode_Mood.noiseBrt.timeScale = 1;
+
+    app.mode_Mood.noiseHue.ampl = 30;
+    app.mode_Mood.noiseHue.timeScale = 1;
+    app.mode_Mood.noiseHue.offset = 1000;
+}
 
 //.........................................................................................ESP
 
@@ -37,6 +54,7 @@ void setup()
     InitWiFiServer(201);      // ip adress 201
     InitHttpFrontend();
     InitBackend();
+    InitState();
 }
 
 void loop()
@@ -81,6 +99,7 @@ void Action_Mode_Mood()
 {
     CRGB col;
     col.setColorCode(app.mode_Mood.color32);
+    if (app.mode_Mood.is_fliker) col = FlickerColor(col);
     fill_solid(leds, NUM_LEDS, col);
     FastLED.show();
 }
@@ -89,6 +108,39 @@ void Action_Mode_Random()
 {
     
 }
+
+//.........................................................................FX
+
+ui8 SampleNoise(const CmpNoise& noise, ui8 value, bool isWrap)
+{
+    float f = inoise8((millis() * noise.timeScale) + noise.offset) / 255.0;   // [ 0, 1]
+    f = (f - 0.5) * 2.0;                                                      // [-1, 1]
+    int result = value + noise.ampl * f;
+    return isWrap ? (ui8)result : constrain(result, 0, 255);
+}
+
+CRGB FlickerColor(const CRGB col)
+{
+    static ui32 ii;
+    CHSV hsv = rgb2hsv_approximate(col);
+    ui8 h = SampleNoise(app.mode_Mood.noiseHue, hsv.h, true);
+    ui8 v = SampleNoise(app.mode_Mood.noiseBrt, hsv.v, false);
+    if (++ii % 20 == 0) SPrint("H=%i | V=%i", h, v);
+    return CHSV(h, hsv.s, v);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // void ActionRunningDotFade()
 // {
