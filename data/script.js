@@ -15,14 +15,14 @@ function drawSliderRow(labelText, id, min = 0, max = 100, initialValue = min) {
 // Define controls for each mode
 const modes = {
   mood: drawButtonGrid([
-    { label: 'Reddish', bgColor: '#ff1900'},
-    { label: 'Cat', bgColor: '#ea00ff'},
+    { label: 'Ruby', bgColor: '#ff0000'},
+    { label: 'Cat', bgColor: '#ff00ea'},
+    { label: 'Fire', bgColor: '#ffa000'},
     { label: 'Eco', bgColor: '#2cff02'},
-    { label: 'Sunny', bgColor: '#fffb02'},
     { label: 'Teal', bgColor: '#02eaff'},
-    { label: 'Piggy', bgColor: '#ffb390'},
-    { label: 'Fire', bgColor: '#ff6f00'},
-    { label: 'Flat White', bgColor: '#ffffff'}
+    { label: 'Sunny', bgColor: '#ff9b02'},
+    { label: 'Flat White', bgColor: '#ffffff'},
+    { label: 'OFF', bgColor: '#000000', textColor: '#ffffff'}
   ])
   ,
   hsv: `
@@ -50,6 +50,34 @@ const modes = {
     </div>
   `
 };
+
+
+// Add Flicker toggle and additional fields
+function addFlickerControls() {
+  return `
+    <div class="flicker-controls">
+      <label class="flicker-toggle">
+        Flicker<input type="checkbox" id="flicker-toggle" onclick="handleFlickerToggle(this)">
+      </label>
+      <div id="flicker-fields" style="display: none;">
+        <div class="slider-row">
+          <label for="flicker-intensity">Hue Amplitude8</label>
+          <input type="number" id="flicker-intensity" min="1" max="100" value="50">
+        </div>
+        <div class="slider-row">
+          <label for="flicker-speed">Hue TimeScale16</label>
+          <input type="number" id="flicker-speed" min="1" max="100" value="50">
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+
+// Update mood mode to include Flicker controls
+modes.mood += addFlickerControls();
+
+
 
 // Update controls dynamically based on selected mode
 modeSelector.addEventListener("change", (e) => {
@@ -91,6 +119,22 @@ function handleColorButtonClick(color) {
     })
     .catch((error) => console.error('Error:', error));
 }
+
+
+// Handle Flicker toggle behavior
+function handleFlickerToggle(toggle) {
+  const flickerFields = document.getElementById("flicker-fields");
+  flickerFields.style.display = toggle.checked ? "block" : "none";
+
+  // Call /mood?is_flicker=<1 or 0>
+  fetch(`/mood?is_flicker=${toggle.checked ? 1 : 0}`).then((response) => {
+      if (response.ok) { console.log(`Flicker set to ${toggle.checked ? "enabled" : "disabled"}`); }
+      else { console.error("Failed to update flicker mode"); }
+    })
+    .catch((error) => console.error("Error:", error));
+}
+
+
 
 // Set default mode (HSV) and attach listeners
 controls.innerHTML = modes["mood"];

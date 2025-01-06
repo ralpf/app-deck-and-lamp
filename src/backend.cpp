@@ -83,7 +83,7 @@ void handle_mode_Mood()
         app.mode_Mood.color32 = html_2_UI32(html_color);
 
     int i = 0;
-    if (tryServerArgI("isFliker", i))
+    if (tryServerArgI("is_flicker", i))
         app.mode_Mood.is_fliker = i != 0;
 
     if (tryServerArgI("hue_ampl", i))
