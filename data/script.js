@@ -62,11 +62,11 @@ function addFlickerControls() {
       <div id="flicker-fields" style="display: none;">
         <div class="slider-row">
           <label for="flicker-intensity">Hue Amplitude8</label>
-          <input type="number" id="flicker-intensity" min="1" max="100" value="50">
+          <input type="number" id="flicker-intensity" min="0" max="255" value="22" style="width: 7ch;" onchange="handleHueAmplitudeChange(this)">
         </div>
         <div class="slider-row">
           <label for="flicker-speed">Hue TimeScale16</label>
-          <input type="number" id="flicker-speed" min="1" max="100" value="50">
+          <input type="number" id="flicker-speed" min="0" max="10000" value="500" style="width: 7ch;" onchange="handleHueTimeScaleChange(this)">
         </div>
       </div>
     </div>
@@ -134,6 +134,27 @@ function handleFlickerToggle(toggle) {
     .catch((error) => console.error("Error:", error));
 }
 
+
+// Handle Hue Amplitude
+function handleHueAmplitudeChange(input) {
+  const value = input.value;
+  fetch(`/mood?hue_ampl=${value}`).then((response) => {
+      if (response.ok) console.log(`Hue Amplitude set to ${value}`);
+      else console.error("Failed to update Hue Amplitude");
+    })
+    .catch((error) => console.error("Error:", error));
+}
+
+
+// Handle Hue TimeScale
+function handleHueTimeScaleChange(input) {
+  const value = input.value;
+  fetch(`/mood?hue_ts=${value}`).then((response) => {
+      if (response.ok) console.log(`Hue TimeScale set to ${value}`);
+      else console.error("Failed to update Hue TimeScale");
+    })
+    .catch((error) => console.error("Error:", error));
+}
 
 
 // Set default mode (HSV) and attach listeners
