@@ -1,23 +1,5 @@
 #include "backend.h"
-
-//........................................................................................
-
-ui32 html_2_UI32(String htmlColor)
-{
-    ui32 err_col = 0xFF8080;
-
-    auto len = htmlColor.length();
-    if (len != 6 && len != 7) return err_col;
-    if (len == 7 && htmlColor[0] != '#') return err_col;
-
-    if (len == 7) htmlColor = htmlColor.substring(1, 7);
-
-    ui8 r = strtol(htmlColor.substring(0, 2).c_str(), NULL, 16);
-    ui8 g = strtol(htmlColor.substring(2, 4).c_str(), NULL, 16);
-    ui8 b = strtol(htmlColor.substring(4, 6).c_str(), NULL, 16);
-
-    return (r << 16) | (g << 8) | b;
-}
+#include "utils.h"
 
 //........................................................................................
 
@@ -80,23 +62,23 @@ void handle_mode_Mood()
 {
     String html_color;
     if (tryServerArgS("color", html_color))
-        app.mode_Mood.color32 = html_2_UI32(html_color);
+        app.lamp.color32 = html_2_UI32(html_color);
 
     int i = 0;
     if (tryServerArgI("is_flicker", i))
-        app.mode_Mood.is_fliker = i != 0;
+        app.lamp.is_fliker = i != 0;
 
     if (tryServerArgI("hue_ampl", i))
-        app.mode_Mood.noiseHue.ampl = i;
-
-    if (tryServerArgI("brt_ampl", i))
-        app.mode_Mood.noiseBrt.ampl = i;
+        app.lamp.noiseHue.ampl = i;
 
     if (tryServerArgI("hue_ts", i))
-        app.mode_Mood.noiseHue.timeScale = i / 1000.0;
+        app.lamp.noiseHue.timeScale = i / 1000.0;
+
+    if (tryServerArgI("brt_ampl", i))
+        app.lamp.noiseBrt.ampl = i;
 
     if (tryServerArgI("brt_ts", i))
-        app.mode_Mood.noiseBrt.timeScale = i / 1000.0;
+        app.lamp.noiseBrt.timeScale = i / 1000.0;
 
     app.curr_mode = 0;
     send_OK("OK mode Mood");
@@ -104,16 +86,50 @@ void handle_mode_Mood()
 
 void handle_mode_Random()
 {
-    int delay = 1000;
-    if (tryServerArgI("delay", delay))
-        app.mode_Rand.delay = delay;
+    int skip = 1000;
+    if (tryServerArgI("skip", skip))
+        app.rand.skip = skip;
 
-    int fade = 1;
-    if (tryServerArgI("fade", fade))
-        app.mode_Rand.fade = fade;
+    int vari = 1;
+    if (tryServerArgI("vari", vari))
+        app.rand.vari = vari;
 
     app.curr_mode = 1;
     send_OK("OK mode Random");
+}
+
+void handle_test()
+{
+    String s = "entering testing mode | prev mode was ";
+    send_OK(s + app.curr_mode);
+    app.curr_mode = 255;
+}
+
+
+void handle_tvcon()
+{
+    String html_color;
+    int i = 0;
+    bool b = false;
+
+    // if (tryServerArgS("color", html_color))
+    //     app.console.color32 = html_2_UI32(html_color);
+    
+    // if (tryServerArgI("Y8", i))
+    //     app.console.bright = constrain(i, 0, 255);
+
+    if (tryServerArgI("hue", i))
+        app.console.hsv.h = constrain(i, 0, 255);
+    if (tryServerArgI("sat", i))
+        app.console.hsv.s = constrain(i, 0, 255);
+    if (tryServerArgI("val", i))
+        app.console.hsv.v = constrain(i, 0, 255);
+
+    if (tryServerArgB("mirror", b))
+        app.console.mirrorLamp = b;
+
+    app.console.update = true;
+    send_OK("TV console color changed -> " + html_color + " mirroring: " + app.console.mirrorLamp);
 }
 
 //...............................................................................APP HANDLES
@@ -127,6 +143,8 @@ void InitBackend()
     server.on("/global", handle_global);
     server.on("/mood", handle_mode_Mood);
     server.on("/random", handle_mode_Random);
+    server.on("/test", handle_test);
+    server.on("/tvcon", handle_tvcon);
     //server.on("/fixed", handleModeFixed);
     //server.on("/run", handleModeRunning);
 

@@ -10,9 +10,10 @@ struct CmpNoise
 };
 
 
-struct ModeMood
+struct BlazarLamp
 {
     ui32 color32 = 0x00FF00FF;
+    ui32 actualColor;               // the color applied to lamp
     bool is_fliker;
     CmpNoise noiseBrt;
     CmpNoise noiseHue;
@@ -21,8 +22,24 @@ struct ModeMood
 
 struct ModeRandom
 {
-    ui16 delay = 300;    // in ms before next led lit
-    ui8  fade  = 1;      // each cycle fade to black
+    ui16 skip = 300;                // in ms before next led lit
+    ui8  vari  = 1;                 // each cycle fade to black
+};
+
+
+struct TVConsole
+{
+    struct HSV
+    {
+        ui8 h = 0xF0;
+        ui8 s = 0xFF;
+        ui8 v = 0xF0;
+    } hsv;
+
+    bool update;
+    bool mirrorLamp;
+    ui32 color32 = 0x00FF00FF;
+    ui8  bright  = 0x00;
 };
 
 
@@ -32,9 +49,10 @@ struct StateData
     ui8 curr_mode  = 0;
     ui8 brightness = 200;
 
-    // modes
-    ModeMood   mode_Mood;
-    ModeRandom mode_Rand;
+    // containers
+    BlazarLamp lamp;
+    ModeRandom rand;
+    TVConsole console;
 };
 
 extern StateData app;

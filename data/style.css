@@ -1,141 +1,147 @@
 body {
-    background-color: #ddcff9; /* Set the page background color */
-    color: black;               /* Set the default text color */
-    font-family: Arial, sans-serif; /* Set the default font */
+  background-color: #ddcff9; /* Set the page background color */
+  color: black;               /* Set the default text color */
+  font-family: Arial, sans-serif; /* Set the default font */
 }
 
 header {
-    background: #371f66;
-    color: #C68CD5;
-    padding: 1em;
-    text-align: center;
-    margin-bottom: 70px;
-    font-family: "Lucida Console", sans-serif;    /* Use Arial or fallback to sans-serif */
-    font-size: 1.25em;    /* Set font size to 16 pixels */
+  background: #371f66;
+  color: #C68CD5;
+  padding: 1em;
+  text-align: center;
+  margin-bottom: 70px;
+  font-family: "Lucida Console", sans-serif;    /* Use Arial or fallback to sans-serif */
+  font-size: 1.25em;    /* Set font size to 16 pixels */
 }
 
 main {
-    padding: 1em;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    min-height: 100vh;
-    gap: 1em;
+  padding: 1em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+  gap: 1em;
 }
 
 .mode-selector {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 1em;
-    padding: 1em;
-    border: 2px;
-    border-radius: 10px;
-    background: #ebe5f8;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
-    width: 80%; /* Match the width of the controls box */
-    max-width: 400px;
-    font-family: "Calibri";
-    font-size: 26px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1em;
+  padding: 1em;
+  border: 2px;
+  border-radius: 10px;
+  background: #ebe5f8;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+  width: 80%; /* Match the width of the controls box */
+  max-width: 400px;
+  font-family: "Calibri";
+  font-size: 26px;
 }
 
 .mode-selector select {
-    font-size: 22px;
-    padding: 0.1em; /* Add padding inside dropdown */
-    border: 1px solid #371f66; /* Border matching the container */
-    border-radius: 5px; /* Rounded corners for the dropdown */
-    background: white; /* Clean background for dropdown */
-    width: 50%; /* Make dropdown full width */
-    box-sizing: border-box; /* Ensure padding doesn't exceed width */
-    cursor: pointer;
+  font-size: 22px;
+  padding: 0.1em; /* Add padding inside dropdown */
+  border: 1px solid #371f66; /* Border matching the container */
+  border-radius: 5px; /* Rounded corners for the dropdown */
+  background: white; /* Clean background for dropdown */
+  width: 50%; /* Make dropdown full width */
+  box-sizing: border-box; /* Ensure padding doesn't exceed width */
+  cursor: pointer;
 }
 
-#controls {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75em;
-    padding: 1em;
-    border: 2px solid #371f66;
-    border-radius: 10px;
-    background: #ebe5f8;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    width: 80%;
-    max-width: 400px;
+.mode-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1em;
+  border: 2px solid #371f66;
+  border-radius: 10px;
+  background: #ebe5f8;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 400px;
 }
 
 .slider-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1em;
-    width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-block: 0.2em;
 }
 
 .slider-row label {
-    flex: 1;
-    text-align: left;
+  flex: 1;
+  text-align: left;
 }
 
 .slider-row span {
-    width: 50px;
-    text-align: right;
+  width: 50px;
+  text-align: right;
 }
 
 .slider-row input[type="range"] {
-    flex: 0 0 50%;
+  flex: 0 0 60%;
 }
 
 .button-grid {
-    display: flex;
-    flex-wrap: wrap; /* Wrap to new rows automatically */
-    justify-content: center; /* Center buttons in the grid */
-    gap: 1em; /* Space between buttons */
-  }
+  display: flex;
+  flex-wrap: wrap; /* Wrap to new rows automatically */
+  justify-content: center; /* Center buttons in the grid */
+  gap: 1em; /* Space between buttons */
+}
   
-  .color-button {
-    background-color: #ebe5f8; /* Button background color */
-    color: black;
-    border: 2px solid #371f66; /* Border styling */
-    border-radius: 5px;
-    padding: 0.5em 1em;
-    font-size: 1em;
-    text-align: center;
-    cursor: pointer;
-    flex: 0 0 calc(33.33% - 1em); /* Each button takes 1/3 of the row minus gap */
-    
-  }
+.color-button {
+  background-color: #ebe5f8; /* Button background color */
+  color: black;
+  border: 2px solid #371f66; /* Border styling */
+  border-radius: 5px;
+  padding: 0.5em 1em;
+  font-size: 1em;
+  text-align: center;
+  cursor: pointer;
+  flex: 0 0 calc(33.33% - 1em); /* Each button takes 1/3 of the row minus gap */
   
-  .color-button:hover {
-    filter: brightness(85%); /* Dim the button for a hover effect */
-  }
-  
-  .button-row-break {
-    flex-basis: 100%; /* Force a new row */
-    height: 0; /* Invisible spacer */
-  }
+}
 
-  .flicker-controls {
-    align-self: center;
-    font-family: "Calibri";
-    border: 1px solid #371f66;
-    border-radius: 5px;
-    padding: 1em;
-    background: #ebe5f8;
-    margin-top: 1em;
-    width: 90%;
-  }
-  
-  .flicker-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 1.2em;
-  }
-  
-  #flicker-fields {
-    margin-top: 1em;
-    display: flex;
-    flex-direction: column;
-  }
+.color-button:hover {
+  filter: brightness(85%); /* Dim the button for a hover effect */
+}
+
+.button-row-break {
+  flex-basis: 100%; /* Force a new row */
+  height: 0; /* Invisible spacer */
+}
+
+.flicker-controls {
+  align-self: center;
+  font-family: "Calibri";
+  border: 1px solid #371f66;
+  border-radius: 5px;
+  padding: 1em;
+  background: #ebe5f8;
+  width: 90%;
+}
+
+.flicker-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.2em;
+}
+
+#flicker-fields {
+  margin-top: 1em;
+  display: flex;
+  flex-direction: column;
+}
+
+.mirror-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1em;
+  margin-bottom: 20px;
+}
