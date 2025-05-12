@@ -7,16 +7,20 @@
 #include "backend.h"
 #include "state.h"
 #include "utils.h"
+#include "klass.h"
+#include "palettes.h"
 
-#define VERSION "0.8.1"
+#define VERSION "0.8.2"
 #define LED_PIN 14 // GPIO14 as your data pin
 #define LED_TVCON_PIN 26
 #define NUM_LEDS_DBALL 12
 #define NUM_LEDS_TVCON 128
 #define NUM_COL 6
 
-CRGB leds[NUM_LEDS_DBALL];
-CRGB leds_tvcon[NUM_LEDS_TVCON];
+CRGB rgb_blazar[NUM_LEDS_DBALL];
+CRGB rgb_tvcon [NUM_LEDS_TVCON];
+
+PaletteLeds* tvconPal;   // use tvcon in palette mode
 
 
 //............................................................................FORWARD DECLARATION
@@ -33,6 +37,24 @@ CRGB FlickerColor(const CRGB col);
 
 //.......................................................................................STATE
 
+void InitFastLed()
+{
+    FastLED.addLeds<WS2812, LED_PIN, GRB>(rgb_blazar, NUM_LEDS_DBALL);
+    FastLED.addLeds<WS2812, LED_TVCON_PIN, GRB>(rgb_tvcon, NUM_LEDS_TVCON);
+    fill_solid(rgb_blazar, NUM_LEDS_DBALL, CRGB::Green);
+    fill_solid(rgb_tvcon, NUM_LEDS_TVCON, CRGB::Green);
+    FastLED.setBrightness(app.brightness);
+    FastLED.show();
+    SPrint("OK: FastLED %i leds on pin %i\n", NUM_LEDS_DBALL, LED_PIN);
+}
+
+
+void InitGlobals()
+{
+    tvconPal = new PaletteLeds(rgb_tvcon, NUM_LEDS_TVCON);
+}
+
+
 void InitState()
 {
     app.lamp.is_fliker = true;
@@ -45,6 +67,7 @@ void InitState()
     app.lamp.noiseHue.offset = 1000;
 }
 
+
 //.........................................................................................ESP
 
 void setup()
@@ -52,15 +75,8 @@ void setup()
     // Starts Serial
     SPrint("\n\n--------------------[[ ESP32 \"Blazar\" Lamp ]]--------------------");
     SPrint("                                                   Version %s\n", VERSION);
-    // Init Fast LED
-    FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS_DBALL);
-    FastLED.addLeds<WS2812, LED_TVCON_PIN, GRB>(leds_tvcon, NUM_LEDS_TVCON);
-    fill_solid(leds, NUM_LEDS_DBALL, CRGB::Green);
-    fill_solid(leds_tvcon, NUM_LEDS_TVCON, CRGB::Green);
-    FastLED.setBrightness(app.brightness);
-    FastLED.show();
-    SPrint("OK: FastLED %i leds on pin %i\n", NUM_LEDS_DBALL, LED_PIN);
-    // Init HTTP
+    InitFastLed();
+    InitGlobals();
     InitWiFiServer(201);      // ip adress 201
     InitHttpFrontend();
     InitBackend();
@@ -68,6 +84,9 @@ void setup()
     // init OTA
     ArduinoOTA.begin();
     SPrint("OK: OTA ready\n");
+
+    rgb_tvcon[0] = rgb_tvcon[1] = rgb_tvcon[2] = CRGB::Azure; // debug on reload
+    tvconPal->SetColor(CRGB::BlueViolet);
 }
 
 void loop()
@@ -106,7 +125,7 @@ void Action_Error()
     CRGB c2 = !flag ? CRGB::Pink  : CRGB::Black;
     
     for (ui8 i = 0; i < 6; ++i)
-        leds[i*2] = leds[i*2 + 1] = i % 2 ? c1 : c2;
+        rgb_blazar[i*2] = rgb_blazar[i*2 + 1] = i % 2 ? c1 : c2;
 
     FastLED.show();
 }
@@ -118,7 +137,7 @@ void Action_Lamp_Mood()
     if (app.lamp.is_fliker)
         col = FlickerColor(col);
 
-    fill_solid(leds, NUM_LEDS_DBALL, col);
+    fill_solid(rgb_blazar, NUM_LEDS_DBALL, col);
     
     app.lamp.actualColor = rgb_2_UI32(col);
     FastLED.show();
@@ -130,28 +149,34 @@ void Action_Lamp_Random()
     if (++f % app.rand.skip != 0 ) return;  // skip every
     for (ui8 i = 0; i < NUM_LEDS_DBALL; ++i)
     {
-        leds[i] = CRGB(random8(), random8(), random8());
+        rgb_blazar[i] = CRGB(random8(), random8(), random8());
     }
     FastLED.show();
 }
 
 void Action_TVConsole()
 {
-    if (!app.console.update && !app.console.mirrorLamp) return;
-    
     CRGB rgb;
     auto appHSV = app.console.hsv;
     
-    if (app.console.mirrorLamp)
+    switch (app.console.mode)
     {
-        rgb.setColorCode(app.lamp.actualColor);
-        rgb.nscale8_video(app.console.hsv.v);
-        fill_solid(leds_tvcon, NUM_LEDS_TVCON, rgb);
-    }
-    else
-    {
-        hsv2rgb( CHSV(appHSV.h, appHSV.s, appHSV.v) , rgb);
-        fill_solid(leds_tvcon, NUM_LEDS_TVCON, rgb);
+        case TVConsole::Mode::HSV:
+            if (!app.console.update) return;
+            hsv2rgb( CHSV(appHSV.h, appHSV.s, appHSV.v) , rgb);
+            fill_solid(rgb_tvcon, NUM_LEDS_TVCON, rgb);
+            break;
+        
+        case TVConsole::Mode::MirrorLamp:
+            rgb.setColorCode(app.lamp.actualColor);
+            rgb.nscale8_video(app.console.hsv.v);
+            fill_solid(rgb_tvcon, NUM_LEDS_TVCON, rgb);
+            break;
+
+        case TVConsole::Mode::Palette:
+            if (app.console.update) tvconPal->SetPalette( fetch_palette(app.console.paletteIdx) );
+            rgb_tvcon[0] = CRGB::Red;
+            break;
     }
 
     // CRGB rgb;

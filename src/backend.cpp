@@ -126,10 +126,26 @@ void handle_tvcon()
         app.console.hsv.v = constrain(i, 0, 255);
 
     if (tryServerArgB("mirror", b))
-        app.console.mirrorLamp = b;
+        app.console.mode = b ? TVConsole::Mode::MirrorLamp : TVConsole::Mode::HSV;
 
     app.console.update = true;
-    send_OK("TV console color changed -> " + html_color + " mirroring: " + app.console.mirrorLamp);
+    send_OK("TV console HSV -> color: " + html_color + " mode: " + app.console.mode);
+}
+
+void handle_tvcon_palette()
+{
+    int i = 0;
+    bool b = false;
+    
+    if (tryServerArgI("idx", i))         // palette index
+        app.console.paletteIdx = i;
+    
+    if (tryServerArgB("rand", b))        // palette randomization
+        app.console.paletteRand = true;
+    
+    app.console.update = true;
+    app.console.mode = TVConsole::Mode::Palette;
+    send_OK("TV-console PALETTE -> idx: " + String(app.console.paletteIdx) + " mode: " + app.console.mode);
 }
 
 //...............................................................................APP HANDLES
@@ -145,6 +161,7 @@ void InitBackend()
     server.on("/random", handle_mode_Random);
     server.on("/test", handle_test);
     server.on("/tvcon", handle_tvcon);
+    server.on("/tvcon/palette", handle_tvcon_palette);
     //server.on("/fixed", handleModeFixed);
     //server.on("/run", handleModeRunning);
 

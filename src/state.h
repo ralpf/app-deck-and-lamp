@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Types.h"
 
 
@@ -29,6 +30,7 @@ struct ModeRandom
 
 struct TVConsole
 {
+    enum Mode { HSV, MirrorLamp, Palette } mode;
     struct HSV
     {
         ui8 h = 0xF0;
@@ -37,9 +39,12 @@ struct TVConsole
     } hsv;
 
     bool update;
-    bool mirrorLamp;
-    ui32 color32 = 0x00FF00FF;
+
     ui8  bright  = 0x00;
+    ui32 color32 = 0x00FF00FF;
+
+    bool paletteRand = 0x0;
+    ui8  paletteIdx  = 0x0;
 };
 
 
