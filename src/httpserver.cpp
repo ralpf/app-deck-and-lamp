@@ -21,21 +21,11 @@ void initFileData();
 
 //..................................................................................
 
-void InitWiFiServer(uint8_t ip_address_last_block)
+// callback called just to signal awaiting status. Float is time in sec
+void InitWiFiServer(uint8_t ip_address_last_block, void(*callback)(float))
 {
-    initWiFi(ip_address_last_block);
-}
-
-
-void InitHttpFrontend()
-{
-    initFileData();
-}
-
-//..................................................................................
-
-void initWiFi(uint8_t ip_address_last_block)
-{
+    const auto delayMs = 10;                                   // just for 'keep-alive' animation
+    static float f;
     IPAddress local_IP(192, 168, 100, ip_address_last_block);   // static IP
     IPAddress gateway(192, 168, 100, 1);                        // Router IP
     IPAddress subnet(255, 255, 255, 0);                         // Subnet mask
@@ -48,8 +38,10 @@ void initWiFi(uint8_t ip_address_last_block)
     Serial.print("... Connecting to WiFi");
     while (WiFi.status() != WL_CONNECTED)
     {
-        delay(500);
         Serial.print(".");
+        f += 1.0 / delayMs;
+        if (callback) callback(f);
+        delay(delayMs);
     }
 
     Serial.print("\nOK: WiFi Connected IP=");
@@ -58,7 +50,7 @@ void initWiFi(uint8_t ip_address_last_block)
 }
 
 
-void initFileData()
+void InitHttpFrontend()
 {
     if (SPIFFS.begin(true) == false)
     {
@@ -89,6 +81,7 @@ void initFileData()
     Serial.println("OK: Loaded index.html, script.js, style.css\n");
 }
 
+//..................................................................................
 
 void readFile(const char* path, String& target)
 {

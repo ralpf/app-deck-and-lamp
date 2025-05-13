@@ -7,28 +7,29 @@
 #include "backend.h"
 #include "state.h"
 #include "utils.h"
-#include "klass.h"
+#include "addrleds.h"
 #include "palettes.h"
 
-#define VERSION "0.8.2"
-#define LED_PIN 14 // GPIO14 as your data pin
-#define LED_TVCON_PIN 26
-#define NUM_LEDS_DBALL 12
-#define NUM_LEDS_TVCON 128
-#define NUM_COL 6
 
-CRGB rgb_blazar[NUM_LEDS_DBALL];
-CRGB rgb_tvcon [NUM_LEDS_TVCON];
 
-PaletteLeds* tvconPal;   // use tvcon in palette mode
+#define VERSION "0.8.4"
+#define LED_DBALL_PIN   14          // GPIO14 data pin
+#define LED_DBALL_COUNT 12          // led ring of 6x2
+#define LED_TVCON_PIN   26
+#define LED_TVCON_COUNT 128         // led strip
+
+
+
+//.........................................ALLOC LEDS
+AddresLeds<LED_TVCON_PIN, LED_TVCON_COUNT> ledsConsole;
+AddresLeds<LED_DBALL_PIN, LED_DBALL_COUNT> ledsBlazar;
+
+bool updateLeds;
 
 
 //............................................................................FORWARD DECLARATION
 
-void Action_Error();
-void Action_ConnectingToWiFi();
-void Action_Lamp_Mood();
-void Action_Lamp_Random();
+void Action_BlazarLamp();
 void Action_TVConsole();
 
 ui8 SampleNoise(const CmpNoise& noise, ui8 value);
@@ -36,24 +37,6 @@ CRGB FlickerColor(const CRGB col);
 
 
 //.......................................................................................STATE
-
-void InitFastLed()
-{
-    FastLED.addLeds<WS2812, LED_PIN, GRB>(rgb_blazar, NUM_LEDS_DBALL);
-    FastLED.addLeds<WS2812, LED_TVCON_PIN, GRB>(rgb_tvcon, NUM_LEDS_TVCON);
-    fill_solid(rgb_blazar, NUM_LEDS_DBALL, CRGB::Green);
-    fill_solid(rgb_tvcon, NUM_LEDS_TVCON, CRGB::Green);
-    FastLED.setBrightness(app.brightness);
-    FastLED.show();
-    SPrint("OK: FastLED %i leds on pin %i\n", NUM_LEDS_DBALL, LED_PIN);
-}
-
-
-void InitGlobals()
-{
-    tvconPal = new PaletteLeds(rgb_tvcon, NUM_LEDS_TVCON);
-}
-
 
 void InitState()
 {
@@ -68,25 +51,41 @@ void InitState()
 }
 
 
-//.........................................................................................ESP
+void AnimateWiFiStartup(float seconds)
+{
+    static ui8 i = 1;
+    ui8 k = ++i * 5;
+    ledsConsole.SetColor(CRGB::Green);
 
+    if (seconds > 0)
+        ledsConsole.SetColor(CRGB::Gold, k, k + 5);
+    else        // connected
+        ledsConsole.SetColor(CRGB::Yellow, 0, k + 5);
+
+    FastLED.show();
+}
+
+    
+//.........................................................................................ESP
+    
 void setup()
 {
     // Starts Serial
     SPrint("\n\n--------------------[[ ESP32 \"Blazar\" Lamp ]]--------------------");
     SPrint("                                                   Version %s\n", VERSION);
-    InitFastLed();
-    InitGlobals();
-    InitWiFiServer(201);      // ip adress 201
+    InitWiFiServer(201, AnimateWiFiStartup);      // ip adress 201 ; check with platformio.ini:upload_port
     InitHttpFrontend();
     InitBackend();
     InitState();
     // init OTA
     ArduinoOTA.begin();
     SPrint("OK: OTA ready\n");
-
-    rgb_tvcon[0] = rgb_tvcon[1] = rgb_tvcon[2] = CRGB::Azure; // debug on reload
-    tvconPal->SetColor(CRGB::BlueViolet);
+    // init leds
+    ledsBlazar.SetColor(CRGB::Red);
+    ledsConsole.SetColor(CRGB::Blue);
+    FastLED.setBrightness(app.brightness);
+    FastLED.show();
+    SPrint("OK: Leds inited \tBlazar %i | TVConsole %i\n", LED_DBALL_COUNT, LED_TVCON_COUNT);
 }
 
 void loop()
@@ -97,62 +96,38 @@ void loop()
     ArduinoOTA.handle();
     FastLED.setBrightness(app.brightness);
 
-    switch (app.curr_mode)
-    {
-        case 0:  Action_Lamp_Mood();             break;
-        case 1:  Action_Lamp_Random();           break;
-        default: Action_Error();
-    }
-
+    Action_BlazarLamp();
     Action_TVConsole();
+
+    if (updateLeds) FastLED.show();
+    updateLeds = false;
 }
 
 //......................................................................LED
 
-void Action_Error()
+void Action_BlazarLamp()
 {
-    // flicker lights
-    static ui32 time = millis();
-    static bool flag;
-
-    if (millis() - time > 500)
+    switch (app.curr_mode)
     {
-        flag = !flag;
-        time = millis();
+        case 0:
+            CRGB col;
+            col.setColorCode(app.lamp.color32);
+            if (app.lamp.is_fliker)
+                col = FlickerColor(col);
+
+            ledsBlazar.SetColor(col);
+            app.lamp.actualColor = rgb_2_UI32(col);
+            updateLeds = true;
+            break;
+
+        case 1:
+            break;
+
+        default:
+            break;
     }
-
-    CRGB c1 =  flag ? CRGB::Black : CRGB::Pink;
-    CRGB c2 = !flag ? CRGB::Pink  : CRGB::Black;
-    
-    for (ui8 i = 0; i < 6; ++i)
-        rgb_blazar[i*2] = rgb_blazar[i*2 + 1] = i % 2 ? c1 : c2;
-
-    FastLED.show();
 }
 
-void Action_Lamp_Mood()
-{
-    CRGB col;
-    col.setColorCode(app.lamp.color32);
-    if (app.lamp.is_fliker)
-        col = FlickerColor(col);
-
-    fill_solid(rgb_blazar, NUM_LEDS_DBALL, col);
-    
-    app.lamp.actualColor = rgb_2_UI32(col);
-    FastLED.show();
-}
-
-void Action_Lamp_Random()
-{
-    static ui8 f = 0;
-    if (++f % app.rand.skip != 0 ) return;  // skip every
-    for (ui8 i = 0; i < NUM_LEDS_DBALL; ++i)
-    {
-        rgb_blazar[i] = CRGB(random8(), random8(), random8());
-    }
-    FastLED.show();
-}
 
 void Action_TVConsole()
 {
@@ -162,35 +137,24 @@ void Action_TVConsole()
     switch (app.console.mode)
     {
         case TVConsole::Mode::HSV:
-            if (!app.console.update) return;
+            if (!app.console.update) break;
             hsv2rgb( CHSV(appHSV.h, appHSV.s, appHSV.v) , rgb);
-            fill_solid(rgb_tvcon, NUM_LEDS_TVCON, rgb);
+            ledsConsole.SetColor(rgb);
             break;
         
         case TVConsole::Mode::MirrorLamp:
             rgb.setColorCode(app.lamp.actualColor);
             rgb.nscale8_video(app.console.hsv.v);
-            fill_solid(rgb_tvcon, NUM_LEDS_TVCON, rgb);
+            ledsConsole.SetColor(rgb);
             break;
 
         case TVConsole::Mode::Palette:
-            if (app.console.update) tvconPal->SetPalette( fetch_palette(app.console.paletteIdx) );
-            rgb_tvcon[0] = CRGB::Red;
+            if (app.console.update) ledsConsole.SetPalette( fetch_palette(app.console.paletteIdx) );
             break;
     }
 
-    // CRGB rgb;
-    // rgb.setColorCode(app.console.color32);
-    // fill_solid(leds_tvcon, NUM_LEDS_TVCON, rgb);
-
-    // if (app.console.bright != 0x00)
-    //     for (ui8 i = 0; i < NUM_LEDS_TVCON; ++i)
-    //         leds_tvcon[i].nscale8_video(app.console.bright);
-
-    // app.console.bright = 0x00;
-
-    app.console.update = 0x00;
-    FastLED.show();
+    updateLeds = true;
+    app.console.update = false;
 }
 
 
@@ -240,14 +204,14 @@ CRGB FlickerColor(CRGB rgb)
 //         idx = ++idx % NUM_COL;
 //     }
 
-//     fadeToBlackBy(leds, NUM_LEDS_DBALL, runningFade);
+//     fadeToBlackBy(leds, LED_DBALL_COUNT, runningFade);
 //     FastLED.show();
 //     CRGB bbb;
 // }
 
 // void ActionFixedColor()
 // {
-//     for (ui8 i = 0; i < NUM_LEDS_DBALL; ++i)
+//     for (ui8 i = 0; i < LED_DBALL_COUNT; ++i)
 //         leds[i] = active;
 //     FastLED.show();
 // }
@@ -265,7 +229,7 @@ CRGB FlickerColor(CRGB rgb)
 //     }
 
 //     if (randomFade == 1)
-//         fadeToBlackBy(leds, NUM_LEDS_DBALL, runningFade);
+//         fadeToBlackBy(leds, LED_DBALL_COUNT, runningFade);
 //     FastLED.show();
 // }
 

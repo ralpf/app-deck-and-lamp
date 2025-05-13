@@ -13,5 +13,5 @@ extern String style_css;
 extern String script_js;
 
 // Serial should be inited before calling this
-void InitWiFiServer(uint8_t ip_adress_last_block);
+void InitWiFiServer(uint8_t ip_adress_last_block, void(*callback)(float));
 void InitHttpFrontend();
