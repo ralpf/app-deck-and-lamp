@@ -94,7 +94,12 @@ void loop()
 
     server.handleClient();
     ArduinoOTA.handle();
-    FastLED.setBrightness(app.brightness);
+    
+    if (app.globalChanged)
+    {
+        app.globalChanged = false;
+        FastLED.setBrightness(app.brightness);
+    }
 
     Action_BlazarLamp();
     Action_TVConsole();
@@ -149,7 +154,7 @@ void Action_TVConsole()
             break;
 
         case TVConsole::Mode::Palette:
-            if (app.console.update) ledsConsole.SetPalette( fetch_palette(app.console.paletteIdx) );
+            ledsConsole.SetPaletteFX( fetch_palette(app.console.paletteIdx), 12 );
             break;
     }
 

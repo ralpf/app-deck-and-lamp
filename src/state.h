@@ -51,8 +51,10 @@ struct TVConsole
 struct StateData
 {
     // global
+    bool globalChanged;
     ui8 curr_mode  = 0;
-    ui8 brightness = 200;
+    ui8 brightness = 200;       // overlays other brightness, global mult
+    float gamma    = 1;
 
     // containers
     BlazarLamp lamp;

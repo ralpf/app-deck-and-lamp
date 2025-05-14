@@ -51,11 +51,15 @@ void handleJS() { server.send(200, "application/javascript", script_js); }
 
 void handle_global()
 {
-    int bright = 0xFF;
-    if (tryServerArgI("bright", bright))
-        app.brightness = bright;
+    int i = 0xFF;
+    if (tryServerArgI("bright", i))
+        app.brightness = i;
 
-    send_OK("OK global");
+    if (tryServerArgI("gamma", i))
+        app.gamma = i / 10.0;
+
+    app.globalChanged = true;
+    send_OK("OK globals " + millis());  // just to see updates
 }
 
 void handle_mode_Mood()
@@ -105,18 +109,11 @@ void handle_test()
     app.curr_mode = 255;
 }
 
-
 void handle_tvcon()
 {
     String html_color;
     int i = 0;
     bool b = false;
-
-    // if (tryServerArgS("color", html_color))
-    //     app.console.color32 = html_2_UI32(html_color);
-    
-    // if (tryServerArgI("Y8", i))
-    //     app.console.bright = constrain(i, 0, 255);
 
     if (tryServerArgI("hue", i))
         app.console.hsv.h = constrain(i, 0, 255);
@@ -142,7 +139,7 @@ void handle_tvcon_palette()
     
     if (tryServerArgB("rand", b))        // palette randomization
         app.console.paletteRand = true;
-    
+
     app.console.update = true;
     app.console.mode = TVConsole::Mode::Palette;
     send_OK("TV-console PALETTE -> idx: " + String(app.console.paletteIdx) + " mode: " + app.console.mode);
