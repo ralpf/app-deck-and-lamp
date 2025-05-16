@@ -43,8 +43,9 @@ struct TVConsole
     ui8  bright  = 0x00;
     ui32 color32 = 0x00FF00FF;
 
-    bool paletteRand = 0x0;
-    ui8  paletteIdx  = 0x0;
+    bool paletteRand  = 0x0;
+    ui8  paletteIdx   = 0x0;
+    ui8  paletteBlend = 24;
 };
 
 
@@ -54,7 +55,7 @@ struct StateData
     bool globalChanged;
     ui8 curr_mode  = 0;
     ui8 brightness = 200;       // overlays other brightness, global mult
-    float gamma    = 1;
+    float gamma    = 2.2;
 
     // containers
     BlazarLamp lamp;

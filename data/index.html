@@ -59,6 +59,16 @@
         <label for="sat-channel">Saturation</label>
         <input type="range" id="sat-channel" min="0" max="255" value="255" onchange="handleTvConsoleSliderChange(this, 'sat')">
       </div>
+      <br>
+      <div class="button-grid">    <!-- Quick Palette -->
+        <button class="color-button" data-idx="0" onclick="handleFixedPaletteButtonClick(this)">Spectrum</button>
+        <button class="color-button" data-idx="1" onclick="handleFixedPaletteButtonClick(this)">Red Lava</button>
+        <button class="color-button" data-idx="2" onclick="handleFixedPaletteButtonClick(this)">Multi Pink</button>
+        <button class="color-button" data-idx="3" onclick="handleFixedPaletteButtonClick(this)">Red Yel Whi</button>
+        <button class="color-button" data-idx="4" onclick="handleFixedPaletteButtonClick(this)">Marine Blue</button>
+      </div>
+      <br><br>
+      <label class="slider-row">Palette Blend Speed<input type="number" min="0" max="255" value="24" style="width: 7ch;" onchange="handlePaletteParamChange(this, 'blend')"></label>
     </div>
 
     <!-- HSV Mode Controls do nothing -->

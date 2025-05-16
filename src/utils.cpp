@@ -83,3 +83,24 @@ void hsv2rgb(const CHSV &hsv, CRGB &rgb)
         case 5: rgb = CRGB(v * 255, p * 255, q * 255); break;
     }
 }
+
+
+bool palettesApproxEqual(const CRGBPalette16& lhs, const CRGBPalette16& rhs, ui8 tolerance)
+{
+    for (int i = 0; i < 16; ++i)
+    {
+        CRGB ca = lhs[i]; CRGB cb = rhs[i];
+        if (abs(ca.r - cb.r) > tolerance || abs(ca.g - cb.g) > tolerance || abs(ca.b - cb.b) > tolerance)
+            return false;
+    }
+    return true;
+}
+
+
+void updateGammaLutTable256(ui8* array256, float gamma)
+{
+    gamma = gamma > 0.001 ? gamma : 0.001;
+    // can't use ui8 as it will  overflow 255->0 resulting in infinite loop
+    for (ui16 i = 0; i < 256; ++i)
+        array256[i] = (ui8)(powf(i/255.0f, gamma) * 255.0f + 0.5f);
+}

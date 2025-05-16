@@ -103,7 +103,7 @@ main {
   text-align: center;
   cursor: pointer;
   flex: 0 0 calc(33.33% - 1em); /* Each button takes 1/3 of the row minus gap */
-  
+  max-height: 3em;
 }
 
 .color-button:hover {

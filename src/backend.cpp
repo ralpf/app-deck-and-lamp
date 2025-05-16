@@ -59,7 +59,7 @@ void handle_global()
         app.gamma = i / 10.0;
 
     app.globalChanged = true;
-    send_OK("OK globals " + millis());  // just to see updates
+    send_OK("OK globals. Bright: " + String(app.brightness) + " Gamma: " + String(app.gamma) );
 }
 
 void handle_mode_Mood()
@@ -139,6 +139,9 @@ void handle_tvcon_palette()
     
     if (tryServerArgB("rand", b))        // palette randomization
         app.console.paletteRand = true;
+
+    if (tryServerArgI("blend", i))
+        app.console.paletteBlend = i;
 
     app.console.update = true;
     app.console.mode = TVConsole::Mode::Palette;

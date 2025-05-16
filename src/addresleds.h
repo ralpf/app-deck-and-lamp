@@ -2,6 +2,7 @@
 
 #include <FastLED.h>
 #include <Types.h>
+#include "utils.h"
 
 
 // the definitions go here because template classes can't be split to .cpp
@@ -9,10 +10,8 @@ template <ui8 PIN, ui16 COUNT>
 class AddresLeds
 {
     
-    private:                    // STATIC
-    static ui8 gammaLUT[COUNT];
     private:                    // MEMBER
-    CRGB          leds[COUNT];
+    CRGB          leds[COUNT];  // don't write directly, use SetRGB
     CRGBPalette16 palette;
     TBlendType    blend = TBlendType::LINEARBLEND;
 
@@ -21,12 +20,13 @@ class AddresLeds
     ui8   speed;                // used for fill
     ui8   bright = 0xFF;        // used for fill
 
+    ui8*  gammaLUT = nullptr;   // 256 element LUT array. Can be null
+
 
     public:                     // CTOR
     AddresLeds()
     {
         FastLED.addLeds<WS2812, PIN, GRB>(leds, COUNT);
-        if (gammaLUT[COUNT-1] = 0f) ApplyGlobalGammaLUT(1);  // init table first time
     }
 
 
@@ -41,7 +41,7 @@ class AddresLeds
     // return true if fx active
     bool SetPaletteFX(const CRGBPalette16& pal16, ui8 maxChange=(ui8)24U)
     {
-        if (PalettesApproximatelyEqual(this->palette, pal16) == false)
+        if (maxChange > 0 && palettesApproxEqual(this->palette, pal16) == false)
         {
             nblendPaletteTowardPalette(this->palette, const_cast<CRGBPalette16&>(pal16), maxChange);
             ApplyPalette();
@@ -54,62 +54,48 @@ class AddresLeds
 
     void SetColor(const CRGB& rgb)
     {
-        for (ui16 i = 0; i < COUNT; ++i) leds[i] = rgb;
+        for (ui16 i = 0; i < COUNT; ++i) _SetRGB(i, rgb);
     }
 
     void SetColor(const CRGB& rgb, ui16 fromIdx, ui16 toIdx)
     {
         fromIdx = constrain(fromIdx, 0, COUNT);
         toIdx   = constrain(toIdx, 0, COUNT);
-        for (ui16 i = fromIdx; i < toIdx; ++i) leds[i] = rgb;
+        for (ui16 i = fromIdx; i < toIdx; ++i) _SetRGB(i, rgb);
     }
 
-    void ApplyGamma_Global(float gamma)
+    void SetColor(const CRGB& rgb, ui16 idx)
     {
-        ApplyGlobalGammaLUT(gamma);
-        this->ApplyGammaCorrection();
+        _SetRGB(idx, rgb);
     }
 
+    // TODO: debug this method
+    void SetColor(const CRGB& rgb, std::initializer_list<ui16> iter)
+    {
+        for (ui16 x : iter) _SetRGB(x, rgb);
+    }
+
+    // can pass null to remove gamma correction
+    void SetGammaLutTable(ui8* array256)
+    {
+        gammaLUT = array256;
+    }
 
 
     private:
-    void ApplyGammaCorrection()
+    void _SetRGB(ui16 idx, CRGB rgb)
     {
-        for (ui16 i = 0; i < COUNT; ++i)
-        {
-            CRGB& rgb = leds[i];
-            rgb.r = gammaLUT[rgb.r];
-            rgb.g = gammaLUT[rgb.g];
-            rgb.b = gammaLUT[rgb.b];
-        }
+        idx = constrain(idx, 0, COUNT-1);
+        if (gammaLUT != nullptr)        // gamma correction
+            rgb = CRGB(gammaLUT[rgb.r], gammaLUT[rgb.g], gammaLUT[rgb.b]);
+        // can add more filters or corrections
+        leds[idx] = rgb;
     }
 
     void ApplyPalette(ui16 offsetIdx = 0)
     {
         for (ui16 i = 0; i < COUNT; ++i)
-            leds[i] = ColorFromPalette(palette, i * f + offsetIdx, bright, blend);
+            _SetRGB( i, ColorFromPalette(palette, i * f + offsetIdx, bright, blend) );
     }
-
-
-    // STATIC STUFF
-
-    static bool PalettesApproximatelyEqual(const CRGBPalette16& lhs, const CRGBPalette16& rhs, uint8_t tolerance = 3)
-    {
-        for (int i = 0; i < 16; ++i)
-        {
-            CRGB ca = lhs[i]; CRGB cb = rhs[i];
-            if (abs(ca.r - cb.r) > tolerance || abs(ca.g - cb.g) > tolerance || abs(ca.b - cb.b) > tolerance)
-                return false;
-        }
-        return true;
-    }
-
-    static void ApplyGlobalGammaLUT(float gamma)
-    {
-        for (ui8 i = 0; i < 256; ++i)
-            gammaLUT[i] = (ui8)(powf(i/255.0f, gamma) * 255.0f + 0.5f);
-    }
-
-
 
 };

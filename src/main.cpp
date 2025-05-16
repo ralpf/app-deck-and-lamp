@@ -7,12 +7,12 @@
 #include "backend.h"
 #include "state.h"
 #include "utils.h"
-#include "addrleds.h"
+#include "addresleds.h"
 #include "palettes.h"
 
 
 
-#define VERSION "0.8.4"
+#define VERSION "0.8.5"
 #define LED_DBALL_PIN   14          // GPIO14 data pin
 #define LED_DBALL_COUNT 12          // led ring of 6x2
 #define LED_TVCON_PIN   26
@@ -25,12 +25,15 @@ AddresLeds<LED_TVCON_PIN, LED_TVCON_COUNT> ledsConsole;
 AddresLeds<LED_DBALL_PIN, LED_DBALL_COUNT> ledsBlazar;
 
 bool updateLeds;
+ui8  gammaLUT[256];                 // for gamma corection
+
 
 
 //............................................................................FORWARD DECLARATION
 
 void Action_BlazarLamp();
 void Action_TVConsole();
+void UpdateGammaLUT();
 
 ui8 SampleNoise(const CmpNoise& noise, ui8 value);
 CRGB FlickerColor(const CRGB col);
@@ -72,6 +75,7 @@ void setup()
 {
     // Starts Serial
     SPrint("\n\n--------------------[[ ESP32 \"Blazar\" Lamp ]]--------------------");
+    SPrint("\n\n----------------------[[ + TV Console supp ]]----------------------");
     SPrint("                                                   Version %s\n", VERSION);
     InitWiFiServer(201, AnimateWiFiStartup);      // ip adress 201 ; check with platformio.ini:upload_port
     InitHttpFrontend();
@@ -86,11 +90,13 @@ void setup()
     FastLED.setBrightness(app.brightness);
     FastLED.show();
     SPrint("OK: Leds inited \tBlazar %i | TVConsole %i\n", LED_DBALL_COUNT, LED_TVCON_COUNT);
+    // update LUT gamma correction
+    UpdateGammaLUT();
 }
 
 void loop()
 {
-    delay(10);
+    delay(1);
 
     server.handleClient();
     ArduinoOTA.handle();
@@ -99,6 +105,7 @@ void loop()
     {
         app.globalChanged = false;
         FastLED.setBrightness(app.brightness);
+        UpdateGammaLUT();
     }
 
     Action_BlazarLamp();
@@ -154,7 +161,8 @@ void Action_TVConsole()
             break;
 
         case TVConsole::Mode::Palette:
-            ledsConsole.SetPaletteFX( fetch_palette(app.console.paletteIdx), 12 );
+            // TODO: v~~~ optimize to not call every time
+            ledsConsole.SetPaletteFX( fetch_palette(app.console.paletteIdx), app.console.paletteBlend );
             break;
     }
 
@@ -164,6 +172,13 @@ void Action_TVConsole()
 
 
 //.........................................................................FX
+
+void UpdateGammaLUT()
+{
+    updateGammaLutTable256(gammaLUT, app.gamma);
+    ledsConsole.SetGammaLutTable(gammaLUT);
+    ledsBlazar.SetGammaLutTable(gammaLUT);
+}
 
 ui8 SampleNoise(const CmpNoise& noise, ui8 value, bool isWrap)
 {

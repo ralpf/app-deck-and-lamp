@@ -63,6 +63,23 @@ function handleMirrorToggle(toggle) {
     }).catch((error) => console.error("Error:", error));
 }
 
+// Change palete to some predefined
+function handleFixedPaletteButtonClick(button) {
+    const index = button.dataset.idx;
+    fetch(`/tvcon/palette?idx=${index}`).then((response) => {
+        if (response.ok) console.log(`Palette index set to ${index}`);
+        else console.error(`Failed to set Palette index: ${index} ${response.status}`);
+    }).catch((error) => console.error('Error:', error));
+}
+
+// Handle Palete param
+function handlePaletteParamChange(input, param) {
+    const value = input.value;
+    fetch(`/tvcon/palette?${param}=${value}`).then((response) => {
+        if (response.ok) console.log(`Palette param ${param} set to ${value}`);
+        else console.error(`Failed to update Palette param ${param}`);
+    }).catch((error) => console.error(`Param ${param} Exception:`, error));
+}
 
 // Set default mode
 controls.innerHTML = modes["mood"];
