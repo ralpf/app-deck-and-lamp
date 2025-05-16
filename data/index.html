@@ -7,10 +7,10 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header><h1>ESP32 "Blazar" Lamp</h1></header>
+  <header><h1>ESP32 TV Wall</h1></header>
   <main>
-    <div class="mode-selector">
-      <label for="mode">Lamp Mode</label>
+    <div class="dropdown-big">
+      <label for="mode">Device Control</label>
       <select id="mode" onchange="handleModeChange(this.value)">
         <option value="mode_blazar" selected>Blazar</option>
         <option value="mode_console">Console</option>
@@ -32,8 +32,8 @@
         <button class="color-button" style="--color: #000000; color: #ffffff; background-color: var(--color);" onclick="handleColorButtonClick(this)">OFF</button>
       </div>
       <br>
-      <div class="flicker-controls">
-        <label class="flicker-toggle">Flicker<input type="checkbox" id="flicker-toggle" onclick="handleFlickerToggle(this)"></label>
+      <div class="boxed-controls">
+        <label class="toggle-norm">Flicker<input type="checkbox" id="toggle-norm" onclick="handleFlickerToggle(this)"></label>
         <div id="flicker-fields" style="display: none;">
           <label class="slider-row">Hue Amplitude<input type="number" min="0" max="255" value="30" style="width: 7ch;" onchange="handleFlickerParamChange(this, 'hue_ampl')"></label>
           <label class="slider-row">Hue TimeScale<input type="number" min="0" max="3000" value="200" style="width: 7ch;" onchange="handleFlickerParamChange(this, 'hue_ts')"></label>

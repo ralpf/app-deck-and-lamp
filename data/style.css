@@ -1,7 +1,7 @@
 body {
   background-color: #ddcff9; /* Set the page background color */
   color: black;               /* Set the default text color */
-  font-family: Arial, sans-serif; /* Set the default font */
+  font-family: Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 header {
@@ -10,8 +10,9 @@ header {
   padding: 1em;
   text-align: center;
   margin-bottom: 70px;
-  font-family: "Lucida Console", sans-serif;    /* Use Arial or fallback to sans-serif */
-  font-size: 1.25em;    /* Set font size to 16 pixels */
+  font-family: "Lucida Console", Arial, sans-serif;    /* Use Arial or fallback to sans-serif */
+  font-size: 1.5em;    /* Set font size to 16 pixels */
+  text-shadow: 0 6px 8px #090118;
 }
 
 main {
@@ -24,24 +25,24 @@ main {
   gap: 1em;
 }
 
-.mode-selector {
+.dropdown-big {
+  border: 2px solid #371f66; /* Border matching the container */
   display: flex;
   flex-direction: row;
   align-items: flex-start;
   gap: 1em;
   padding: 1em;
-  border: 2px;
   border-radius: 10px;
-  background: #ebe5f8;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
-  width: 80%; /* Match the width of the controls box */
+  background: #9e89cd;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+  width: 100%; /* Match the width of the controls box */
   max-width: 400px;
-  font-family: "Calibri";
-  font-size: 26px;
+  /*font-family: "Calibri";*/
+  font-size: 1.5em;
 }
 
-.mode-selector select {
-  font-size: 22px;
+.dropdown-big select {
+  font-size: 1em;
   padding: 0.1em; /* Add padding inside dropdown */
   border: 1px solid #371f66; /* Border matching the container */
   border-radius: 5px; /* Rounded corners for the dropdown */
@@ -115,9 +116,9 @@ main {
   height: 0; /* Invisible spacer */
 }
 
-.flicker-controls {
+.boxed-controls {
   align-self: center;
-  font-family: "Calibri";
+  /*font-family: "Calibri";*/
   border: 1px solid #371f66;
   border-radius: 5px;
   padding: 1em;
@@ -125,11 +126,11 @@ main {
   width: 90%;
 }
 
-.flicker-toggle {
+.toggle-norm {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 1.2em;
+  /*font-size: 1.2em;*/
 }
 
 #flicker-fields {
