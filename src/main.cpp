@@ -81,6 +81,8 @@ void setup()
     InitHttpFrontend();
     InitBackend();
     InitState();
+    // init palette16 data
+    palette_init();
     // init OTA
     ArduinoOTA.begin();
     SPrint("OK: OTA ready\n");
@@ -162,7 +164,7 @@ void Action_TVConsole()
 
         case TVConsole::Mode::Palette:
             // TODO: v~~~ optimize to not call every time
-            ledsConsole.SetPaletteFX( fetch_palette(app.console.paletteIdx), app.console.paletteBlend );
+            ledsConsole.SetPaletteFX( palette_from_idx(app.console.paletteIdx), app.console.paletteBlend );
             break;
     }
 
