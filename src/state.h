@@ -30,22 +30,14 @@ struct ModeRandom
 
 struct TVConsole
 {
-    enum Mode { HSV, MirrorLamp, Palette } mode;
-    struct HSV
-    {
-        ui8 h = 0xF0;
-        ui8 s = 0xFF;
-        ui8 v = 0xF0;
-    } hsv;
-
     bool update;
+    ui8  bright = 0xF0;
+    ui8  blend  = 0x18;
 
-    ui8  bright  = 0x00;
-    ui32 color32 = 0x00FF00FF;
-
-    bool paletteRand  = 0x0;
-    ui8  paletteIdx   = 0x0;
-    ui8  paletteBlend = 24;
+    enum class Mode  { MirrorLamp, Palette, HSV } mode;
+    struct { ui8 h = 0xF0; ui8 s = 0xFF; } hsv;
+    struct { ui32 color32; } mirrorLamp;
+    struct { ui8 idx; bool irand; const char* namesJson; } palette;
 };
 
 

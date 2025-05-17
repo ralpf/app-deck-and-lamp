@@ -54,6 +54,13 @@ void InitState()
 }
 
 
+void InitPalettes()
+{
+    palette_init();
+    app.console.palette.namesJson = palette_names_json();
+}
+
+
 void AnimateWiFiStartup(float seconds)
 {
     static ui8 i = 1;
@@ -81,8 +88,7 @@ void setup()
     InitHttpFrontend();
     InitBackend();
     InitState();
-    // init palette16 data
-    palette_init();
+    InitPalettes();
     // init OTA
     ArduinoOTA.begin();
     SPrint("OK: OTA ready\n");
@@ -146,25 +152,24 @@ void Action_BlazarLamp()
 void Action_TVConsole()
 {
     CRGB rgb;
-    auto appHSV = app.console.hsv;
-    
+
     switch (app.console.mode)
     {
         case TVConsole::Mode::HSV:
             if (!app.console.update) break;
-            hsv2rgb( CHSV(appHSV.h, appHSV.s, appHSV.v) , rgb);
+            hsv2rgb( CHSV(app.console.hsv.h, app.console.hsv.s, app.console.bright) , rgb);
             ledsConsole.SetColor(rgb);
             break;
         
         case TVConsole::Mode::MirrorLamp:
             rgb.setColorCode(app.lamp.actualColor);
-            rgb.nscale8_video(app.console.hsv.v);
+            rgb.nscale8_video(app.console.bright);
             ledsConsole.SetColor(rgb);
             break;
 
         case TVConsole::Mode::Palette:
             // TODO: v~~~ optimize to not call every time
-            ledsConsole.SetPaletteFX( palette_from_idx(app.console.paletteIdx), app.console.paletteBlend );
+            ledsConsole.SetPaletteFX( palette_from_idx(app.console.palette.idx), app.console.blend );
             break;
     }
 

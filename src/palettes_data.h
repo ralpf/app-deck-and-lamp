@@ -2,7 +2,7 @@
 
 #include "palettes.h"
 
-#define PALETE_COUNT 5  // don't forget to update
+#define PALETE_COUNT 7  // don't forget to update
 
 
 //=============================== PALETTE DATA =================================
@@ -57,6 +57,20 @@ DEFINE_GRADIENT_PALETTE(palData_MarineBlue)
 };
 
 
+DEFINE_GRADIENT_PALETTE(palData_Turq) {
+  76, 55, 255, 55,
+  127, 255, 255, 55,
+  178, 55, 255, 55
+};
+
+
+DEFINE_GRADIENT_PALETTE(palData_Sunset_Real) {
+  0, 135, 0, 0,
+  22, 189, 22, 0,
+  51, 255, 104, 0,
+  85, 178, 22, 25,
+  135, 115, 0, 115
+};
 
 //============================= PALETTE SPECIAL ===============================
 
