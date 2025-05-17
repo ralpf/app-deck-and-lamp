@@ -32,6 +32,12 @@ class AddresLeds
 
  
     public:                     // METHODS
+    void SetBrightness(const ui8 brightness)
+    {
+        // NOTE: must call every update. 
+        this->bright = brightness;
+    }
+
     void SetPalette(const CRGBPalette16& pal16)
     {
         palette = pal16;
@@ -83,19 +89,22 @@ class AddresLeds
 
 
     private:
-    void _SetRGB(ui16 idx, CRGB rgb)
+    void ApplyPalette(ui16 offsetIdx = 0)
+    {
+        const ui8 MAX = 0xFF;
+        for (ui16 i = 0; i < COUNT; ++i)
+            _SetRGB( i, ColorFromPalette(palette, i * f + offsetIdx, MAX, blend) );
+    }
+
+    
+    protected:
+    virtual void _SetRGB(ui16 idx, CRGB rgb)
     {
         idx = constrain(idx, 0, COUNT-1);
         if (gammaLUT != nullptr)        // gamma correction
             rgb = CRGB(gammaLUT[rgb.r], gammaLUT[rgb.g], gammaLUT[rgb.b]);
         // can add more filters or corrections
-        leds[idx] = rgb;
+        // apply bright
+        leds[idx] = rgb.nscale8(bright);
     }
-
-    void ApplyPalette(ui16 offsetIdx = 0)
-    {
-        for (ui16 i = 0; i < COUNT; ++i)
-            _SetRGB( i, ColorFromPalette(palette, i * f + offsetIdx, bright, blend) );
-    }
-
 };

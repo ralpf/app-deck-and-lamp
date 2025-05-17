@@ -8,6 +8,7 @@
 #include "state.h"
 #include "utils.h"
 #include "addresleds.h"
+#include "addresledRnd.h"
 #include "palettes.h"
 
 
@@ -21,8 +22,8 @@
 
 
 //.........................................ALLOC LEDS
-AddresLeds<LED_TVCON_PIN, LED_TVCON_COUNT> ledsConsole;
-AddresLeds<LED_DBALL_PIN, LED_DBALL_COUNT> ledsBlazar;
+AddresLedsRnd<LED_TVCON_PIN, LED_TVCON_COUNT> ledsConsole;
+AddresLeds   <LED_DBALL_PIN, LED_DBALL_COUNT> ledsBlazar;
 
 bool updateLeds;
 ui8  gammaLUT[256];                 // for gamma corection
@@ -127,6 +128,7 @@ void loop()
 
 void Action_BlazarLamp()
 {
+    ledsBlazar.SetBrightness(app.lamp.bright);
     switch (app.curr_mode)
     {
         case 0:
@@ -151,30 +153,30 @@ void Action_BlazarLamp()
 
 void Action_TVConsole()
 {
+    ledsConsole.SetBrightness(app.console.bright);
+    ledsConsole.setRandEnabled(app.console.palette.irand);
     CRGB rgb;
 
     switch (app.console.mode)
     {
         case TVConsole::Mode::HSV:
-            if (!app.console.update) break;
             hsv2rgb( CHSV(app.console.hsv.h, app.console.hsv.s, app.console.bright) , rgb);
             ledsConsole.SetColor(rgb);
             break;
         
         case TVConsole::Mode::MirrorLamp:
             rgb.setColorCode(app.lamp.actualColor);
-            rgb.nscale8_video(app.console.bright);
             ledsConsole.SetColor(rgb);
             break;
 
         case TVConsole::Mode::Palette:
             // TODO: v~~~ optimize to not call every time
-            ledsConsole.SetPaletteFX( palette_from_idx(app.console.palette.idx), app.console.blend );
+            auto pal = palette_from_idx(app.console.palette.idx);
+            ledsConsole.SetPaletteFX(pal, app.console.blend);
             break;
     }
 
     updateLeds = true;
-    app.console.update = false;
 }
 
 

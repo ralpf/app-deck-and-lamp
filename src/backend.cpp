@@ -78,6 +78,7 @@ void handle_mode_Mood()
     send_OK("OK mode Mood");
 }
 
+
 void handle_mode_Random()
 {
     int i = 0;
@@ -108,17 +109,16 @@ void handle_tvcon()
     if (tryServerArgI("bright", i))    app.console.bright = constrain(i, 0, 255);
     if (tryServerArgI("blend", i))  app.console.blend  = constrain(i, 0, 255);
     
-    
     send_OK("Received /tvcon");
-    app.console.update = true;
 }
+
 
 void handle_tvcon_mirror()
 {
-    send_OK("Received /tvcon/mirror");
     app.console.mode = TVConsole::Mode::MirrorLamp;
-    app.console.update = true;
+    send_OK("Received /tvcon/mirror");
 }
+
 
 void handle_tvcon_palette()
 {
@@ -129,15 +129,16 @@ void handle_tvcon_palette()
     if (tryServerArgI("idx", i))    app.console.palette.idx = i;
     if (tryServerArgB("irand", b))  app.console.palette.irand = b;
 
-    send_OK("Received /tvcon/palette");
     app.console.mode = TVConsole::Mode::Palette;
-    app.console.update = true;
+    send_OK("Received /tvcon/palette");
 }
+
 
 void handle_tvcon_palette_names()
 {
     send_Json(app.console.palette.namesJson);
 }
+
 
 void handle_tvcon_hsv()
 {
@@ -146,9 +147,8 @@ void handle_tvcon_hsv()
     if (tryServerArgI("hue", i))    app.console.hsv.h = constrain(i, 0, 255);
     if (tryServerArgI("sat", i))    app.console.hsv.s = constrain(i, 0, 255);
     
-    send_OK("Received /tvcon/hsv");
     app.console.mode = TVConsole::Mode::HSV;
-    app.console.update = true;
+    send_OK("Received /tvcon/hsv");
 }   
 
 //...............................................................................APP HANDLES

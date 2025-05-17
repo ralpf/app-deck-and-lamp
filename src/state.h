@@ -16,6 +16,8 @@ struct BlazarLamp
     ui32 color32 = 0x00FF00FF;
     ui32 actualColor;               // the color applied to lamp
     bool is_fliker;
+    ui8  bright = 0xF;
+    ui8  blend  = 0x18;
     CmpNoise noiseBrt;
     CmpNoise noiseHue;
 };
@@ -30,7 +32,6 @@ struct ModeRandom
 
 struct TVConsole
 {
-    bool update;
     ui8  bright = 0xF0;
     ui8  blend  = 0x18;
 

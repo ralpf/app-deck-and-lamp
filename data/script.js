@@ -72,9 +72,10 @@ const Blazar = {
 const TVConsole = {
 
     isInited: false,
-    palette_buttons_selected: 0,
-    control_hue: 0,
-    control_sat: 255,
+    palette_idx_selected: 0,
+    control_hue: 0,             // ui8
+    control_sat: 255,           // ui8
+    randEnable: 0,              // toggle
 
 
     TryApplyAllOnce() {
@@ -110,13 +111,14 @@ const TVConsole = {
         // Call submode parameters
         let request = "";
         if (submode === "submode_mirror_blazar") request = `/tvcon/mirror`; else
-        if (submode === "submode_palette")       request = `/tvcon/palette?idx=${this.palette_buttons_selected}`; else
+        if (submode === "submode_palette")       request = `/tvcon/palette?idx=${this.palette_idx_selected}&irand=${this.randEnable}`; else
         if (submode === "submode_hsv")           request = `/tvcon/hsv?hue=${this.control_hue}&sat=${this.control_sat}`;
         do_fetch(request);
     },
 
 
     OnFixedPaletteButton(idx) {
+        this.palette_idx_selected = idx;
         do_fetch(`/tvcon/palette?idx=${idx}`);
     },
 
@@ -136,7 +138,13 @@ const TVConsole = {
             if (param === 'hue') this.control_hue = value;
             if (param === 'sat') this.control_sat = value;
         }
-    }
+    },
+
+
+    OnToggle(toggle) {
+        this.randEnable = toggle.checked ? 1 : 0;
+        do_fetch(`/tvcon/palette?irand=${this.randEnable}`);
+    },
 
 }; // ======================================================================== END TVConsole
 

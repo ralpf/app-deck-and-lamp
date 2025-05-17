@@ -88,6 +88,11 @@
 
       <div id="submode_palette" style="display: none;">
         <label>All Palettes</label>  <!-- List of available palletes; Will fill by script -->
+        <br><br>
+        <div class="toggle-norm">
+          <label for="sat-channel">Randomize</label>
+          <input type="checkbox" id="rand-idx" onchange="TVConsole.OnToggle(this)">
+        </div>
         <br><hr>
         <div id="palette-list" class="button-list"></div>
       </div>
