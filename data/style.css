@@ -25,6 +25,8 @@ main {
   gap: 1em;
 }
 
+
+
 .dropdown-big {
   border: 2px solid #371f66; /* Border matching the container */
   display: flex;
@@ -52,6 +54,28 @@ main {
   cursor: pointer;
 }
 
+.dropdown-norm {
+  font-size: 1.1em;
+  text-align: left;
+  padding-right: 1em;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 1em;
+  max-width: 400px;
+  font-size: 1;
+  width: 60%; /* Match the width of the controls box */
+}
+
+.dropdown-norm select {
+  background: white; /* Clean background for dropdown */
+  width: 50%; /* Make dropdown full width */
+  box-sizing: border-box; /* Ensure padding doesn't exceed width */
+  cursor: pointer;
+}
+
+
+
 .mode-controls {
   display: flex;
   flex-direction: column;
@@ -63,6 +87,11 @@ main {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   width: 100%;
   max-width: 400px;
+  gap: 2em;
+}
+
+.mode-controls > * {    /* Add space between every control inside */
+  margin-top: 0.2em;
 }
 
 .slider-row {
@@ -145,4 +174,8 @@ main {
   justify-content: space-between;
   font-size: 1em;
   margin-bottom: 20px;
+}
+
+.palette-list-block {
+  margin-top: 4em;
 }

@@ -11,10 +11,10 @@
   <main>
     <div class="dropdown-big">
       <label for="mode">Device Control</label>
-      <select id="mode" onchange="handleModeChange(this.value)">
+      <select id="mode" onchange="Main.ModeChanged(this.value)">
         <option value="mode_blazar" selected>Blazar</option>
         <option value="mode_console">Console</option>
-        <option value="mode_hsv">HSV (nw)</option>
+        <option value="mode_global">Globals</option>
         <option value="mode_other">Other (nw)</option>
       </select>
     </div>
@@ -22,57 +22,74 @@
     <!-- Blazar Lamp Mode Controls -->
     <div id="mode_blazar-controls" class="mode-controls">
       <div class="button-grid">
-        <button class="color-button" style="--color: #ff0000; background-color: var(--color);" onclick="handleColorButtonClick(this)">Ruby</button>
-        <button class="color-button" style="--color: #ff00ea; background-color: var(--color);" onclick="handleColorButtonClick(this)">Cat</button>
-        <button class="color-button" style="--color: #ffa000; background-color: var(--color);" onclick="handleColorButtonClick(this)">Fire</button>
-        <button class="color-button" style="--color: #2cff02; background-color: var(--color);" onclick="handleColorButtonClick(this)">Eco</button>
-        <button class="color-button" style="--color: #02eaff; background-color: var(--color);" onclick="handleColorButtonClick(this)">Teal</button>
-        <button class="color-button" style="--color: #ff9b02; background-color: var(--color);" onclick="handleColorButtonClick(this)">Sunny</button>
-        <button class="color-button" style="--color: #ffffff; background-color: var(--color);" onclick="handleColorButtonClick(this)">Flat White</button>
-        <button class="color-button" style="--color: #000000; color: #ffffff; background-color: var(--color);" onclick="handleColorButtonClick(this)">OFF</button>
+        <button class="color-button" style="--color: #ff0000; background-color: var(--color);" onclick="Blazar.OnColorButton(this)">Ruby</button>
+        <button class="color-button" style="--color: #ff00ea; background-color: var(--color);" onclick="Blazar.OnColorButton(this)">Cat</button>
+        <button class="color-button" style="--color: #ffa000; background-color: var(--color);" onclick="Blazar.OnColorButton(this)">Fire</button>
+        <button class="color-button" style="--color: #2cff02; background-color: var(--color);" onclick="Blazar.OnColorButton(this)">Eco</button>
+        <button class="color-button" style="--color: #02eaff; background-color: var(--color);" onclick="Blazar.OnColorButton(this)">Teal</button>
+        <button class="color-button" style="--color: #ff9b02; background-color: var(--color);" onclick="Blazar.OnColorButton(this)">Sunny</button>
+        <button class="color-button" style="--color: #ffffff; background-color: var(--color);" onclick="Blazar.OnColorButton(this)">Flat White</button>
+        <button class="color-button" style="--color: #000000; color: #ffffff; background-color: var(--color);" onclick="Blazar.OnColorButton(this)">OFF</button>
       </div>
       <br>
       <div class="boxed-controls">
-        <label class="toggle-norm">Flicker<input type="checkbox" id="toggle-norm" onclick="handleFlickerToggle(this)"></label>
+        <label class="toggle-norm">Flicker<input type="checkbox" id="toggle-norm" onclick="Blazar.FlickerToggle(this)"></label>
         <div id="flicker-fields" style="display: none;">
-          <label class="slider-row">Hue Amplitude<input type="number" min="0" max="255" value="30" style="width: 7ch;" onchange="handleFlickerParamChange(this, 'hue_ampl')"></label>
-          <label class="slider-row">Hue TimeScale<input type="number" min="0" max="3000" value="200" style="width: 7ch;" onchange="handleFlickerParamChange(this, 'hue_ts')"></label>
+          <label class="slider-row">Hue Amplitude<input type="number" min="0" max="255" value="30" style="width: 7ch;" onchange="Blazar.FlickerParamChange(this, 'hue_ampl')"></label>
+          <label class="slider-row">Hue TimeScale<input type="number" min="0" max="3000" value="200" style="width: 7ch;" onchange="Blazar.FlickerParamChange(this, 'hue_ts')"></label>
           <br>
-          <label class="slider-row">Brt Amplitude<input type="number" min="0" max="255" value="0" style="width: 7ch;" onchange="handleFlickerParamChange(this, 'brt_ampl')"></label>
-          <label class="slider-row">Brt TimeScale<input type="number" min="0" max="3000" value="100" style="width: 7ch;" onchange="handleFlickerParamChange(this, 'brt_ts')"></label>
+          <label class="slider-row">Brt Amplitude<input type="number" min="0" max="255" value="0" style="width: 7ch;" onchange="Blazar.FlickerParamChange(this, 'brt_ampl')"></label>
+          <label class="slider-row">Brt TimeScale<input type="number" min="0" max="3000" value="100" style="width: 7ch;" onchange="Blazar.FlickerParamChange(this, 'brt_ts')"></label>
         </div>
       </div>
     </div>
 
     <!-- TV Console Mode Controls -->
     <div id="mode_console-controls" class="mode-controls" style="display: none;">
-      <label class="mirror-toggle">Mirror Blazar Color<input type="checkbox" id="mirror-toggle" onclick="handleMirrorToggle(this)"></label>
-      <div class="slider-row">
-        <label for="hue-channel">Hue</label>
-        <input type="range" id="hue-channel" min="0" max="255" value="200" onchange="handleTvConsoleSliderChange(this, 'hue')">
+
+      <div class="slider-row">  <!-- label and control in one line -->
+        <label for="submode_console">Type</label>  <!-- Submode select -->
+        <select id="submode_console" class="dropdown-norm" onchange="TVConsole.OnSubmodeChanged(this.value)">
+          <option value="submode_mirror_blazar" selected>Mirror Blazar</option>
+          <option value="submode_palette">Palette</option>
+          <option value="submode_hsv">HSV</option>
+        </select>
       </div>
+
       <div class="slider-row">
         <label for="val-channel">Brightness</label>
-        <input type="range" id="val-channel" min="0" max="255" value="96" onchange="handleTvConsoleSliderChange(this, 'val')">
+        <input type="range" id="val-channel" min="0" max="255" value="96" onchange="TVConsole.OnSliderChange(this, 'val')">
       </div>
+      
       <div class="slider-row">
-        <label for="sat-channel">Saturation</label>
-        <input type="range" id="sat-channel" min="0" max="255" value="255" onchange="handleTvConsoleSliderChange(this, 'sat')">
+        <label for="blend-speed">Palette Blend Speed</label>
+        <input id="blend-speed" type="number" min="0" max="255" value="24" style="width: 7ch; font-size: 1.07em;" onchange="TVConsole.OnParamChange(this, 'blend')">
       </div>
-      <br>
-      <div class="button-grid">    <!-- Quick Palette -->
-        <button class="color-button" data-idx="0" onclick="handleFixedPaletteButtonClick(this)">Spectrum</button>
-        <button class="color-button" data-idx="1" onclick="handleFixedPaletteButtonClick(this)">Red Lava</button>
-        <button class="color-button" data-idx="2" onclick="handleFixedPaletteButtonClick(this)">Multi Pink</button>
-        <button class="color-button" data-idx="3" onclick="handleFixedPaletteButtonClick(this)">Red Yel Whi</button>
-        <button class="color-button" data-idx="4" onclick="handleFixedPaletteButtonClick(this)">Marine Blue</button>
-      </div>
+      
       <br><br>
-      <label class="slider-row">Palette Blend Speed<input type="number" min="0" max="255" value="24" style="width: 7ch;" onchange="handlePaletteParamChange(this, 'blend')"></label>
+
+      <div id="submode_mirror_blazar" style="display: none;">
+      </div>
+
+      <div id="submode_hsv" style="display: none;">
+        <div class="slider-row">
+          <label for="hue-channel">Hue</label>
+          <input type="range" id="hue-channel" min="0" max="255" value="200" onchange="TVConsole.OnSliderChange(this, 'hue')">
+        </div>
+        <div class="slider-row">
+          <label for="sat-channel">Saturation</label>
+          <input type="range" id="sat-channel" min="0" max="255" value="255" onchange="TVConsole.OnSliderChange(this, 'sat')">
+        </div>
+      </div>
+
+      <div id="submode_palette" style="display: none;">
+        <label>All Palettes</label>  <!-- List of available palletes; Will fill by script -->
+        <div id="palette-list" class="button-grid" style="max-height: 200px; overflow-y: auto;"></div>
+      </div>
     </div>
 
     <!-- HSV Mode Controls do nothing -->
-    <div id="mode_hsv-controls" class="mode-controls" style="display: none;">
+    <div id="mode_global-controls" class="mode-controls" style="display: none;">
       <div class="slider-row">
         <label for="hue-slider">Hue</label>
         <input type="range" id="hue-slider" min="0" max="360" value="180">
