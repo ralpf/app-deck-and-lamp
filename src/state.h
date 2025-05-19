@@ -16,24 +16,18 @@ struct BlazarLamp
     ui32 color32 = 0x00FF00FF;
     ui32 actualColor;               // the color applied to lamp
     bool is_fliker;
-    ui8  bright = 0xF;
-    ui8  blend  = 0x18;
+    ui8  bright = 250;
+    ui8  blend  = 24;
     CmpNoise noiseBrt;
     CmpNoise noiseHue;
 };
 
 
-struct ModeRandom
-{
-    ui16 skip = 300;                // in ms before next led lit
-    ui8  vari  = 1;                 // each cycle fade to black
-};
-
-
 struct TVConsole
 {
-    ui8  bright = 0xF0;
-    ui8  blend  = 0x18;
+    ui8  bright = 140;
+    ui8  blend  = 24;
+    ui8  anim   = 0;
 
     enum class Mode  { MirrorLamp, Palette, HSV } mode;
     struct { ui8 h = 0xF0; ui8 s = 0xFF; } hsv;
@@ -44,15 +38,14 @@ struct TVConsole
 
 struct StateData
 {
+    enum class DeviceMode { Lamp, Console, Globals /*keep last*/ };
     // global
-    bool globalChanged;
-    ui8 curr_mode  = 0;
-    ui8 brightness = 200;       // overlays other brightness, global mult
+    ui8   brightness = 200;       // overlays other brightness, global mult
+    ui8   animSkip = 8;           // this will scale down the addressed leds animations
     float gamma    = 2.2;
 
     // containers
     BlazarLamp lamp;
-    ModeRandom rand;
     TVConsole console;
 };
 

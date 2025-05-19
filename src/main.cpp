@@ -26,15 +26,16 @@ AddresLedsRnd<LED_TVCON_PIN, LED_TVCON_COUNT> ledsConsole;
 AddresLeds   <LED_DBALL_PIN, LED_DBALL_COUNT> ledsBlazar;
 
 bool updateLeds;
-ui8  gammaLUT[256];                 // for gamma corection
+bool recalculateLUT;                // for gamma correction
+ui8  gammaLUT[256];                 // for gamma correction
 
 
 
 //............................................................................FORWARD DECLARATION
 
-void Action_BlazarLamp();
-void Action_TVConsole();
-void UpdateGammaLUT();
+void Loop_BlazarLamp();
+void Loop_TVConsole();
+void RecaluculateGammaLUT();
 
 ui8 SampleNoise(const CmpNoise& noise, ui8 value);
 CRGB FlickerColor(const CRGB col);
@@ -100,7 +101,7 @@ void setup()
     FastLED.show();
     SPrint("OK: Leds inited \tBlazar %i | TVConsole %i\n", LED_DBALL_COUNT, LED_TVCON_COUNT);
     // update LUT gamma correction
-    UpdateGammaLUT();
+    RecaluculateGammaLUT();
 }
 
 void loop()
@@ -110,15 +111,11 @@ void loop()
     server.handleClient();
     ArduinoOTA.handle();
     
-    if (app.globalChanged)
-    {
-        app.globalChanged = false;
-        FastLED.setBrightness(app.brightness);
-        UpdateGammaLUT();
-    }
+    FastLED.setBrightness(app.brightness);
+    if (recalculateLUT) RecaluculateGammaLUT();
 
-    Action_BlazarLamp();
-    Action_TVConsole();
+    Loop_BlazarLamp();
+    Loop_TVConsole();
 
     if (updateLeds) FastLED.show();
     updateLeds = false;
@@ -126,34 +123,23 @@ void loop()
 
 //......................................................................LED
 
-void Action_BlazarLamp()
+void Loop_BlazarLamp()
 {
-    ledsBlazar.SetBrightness(app.lamp.bright);
-    switch (app.curr_mode)
-    {
-        case 0:
-            CRGB col;
-            col.setColorCode(app.lamp.color32);
-            if (app.lamp.is_fliker)
-                col = FlickerColor(col);
+    ledsBlazar.OnUpdate(app.lamp.bright, 0, 0);  // force no skip and no anim idx
+    CRGB col;
+    col.setColorCode(app.lamp.color32);
+    if (app.lamp.is_fliker)
+        col = FlickerColor(col);
 
-            ledsBlazar.SetColor(col);
-            app.lamp.actualColor = rgb_2_UI32(col);
-            updateLeds = true;
-            break;
-
-        case 1:
-            break;
-
-        default:
-            break;
-    }
+    ledsBlazar.SetColor(col);
+    app.lamp.actualColor = rgb_2_UI32(col);
+    updateLeds = true;
 }
 
 
-void Action_TVConsole()
+void Loop_TVConsole()
 {
-    ledsConsole.SetBrightness(app.console.bright);
+    ledsConsole.OnUpdate(app.console.bright, app.console.anim, app.animSkip);
     ledsConsole.setRandEnabled(app.console.palette.irand);
     CRGB rgb;
 
@@ -182,8 +168,9 @@ void Action_TVConsole()
 
 //.........................................................................FX
 
-void UpdateGammaLUT()
+void RecaluculateGammaLUT()
 {
+    recalculateLUT = false;
     updateGammaLutTable256(gammaLUT, app.gamma);
     ledsConsole.SetGammaLutTable(gammaLUT);
     ledsBlazar.SetGammaLutTable(gammaLUT);

@@ -1,6 +1,8 @@
 #include "backend.h"
 #include "utils.h"
 
+extern bool recalculateLUT;
+
 //............................................................................HELPER FUNC
 
 void send_OK  (const String& msg)  { server.send(200, "text/plain", msg); }
@@ -53,10 +55,10 @@ void handle_global()
 {
     int i = 255;
 
-    if (tryServerArgI("bright", i)) app.brightness = i;
-    if (tryServerArgI("gamma", i))  app.gamma = i / 10.0;
+    if (tryServerArgI("bright", i))   app.brightness = i;
+    if (tryServerArgI("gamma", i))  { app.gamma = i / 10.0; recalculateLUT = true; }
+    if (tryServerArgI("animSkip", i)) app.animSkip = i;
     
-    app.globalChanged = true;
     send_OK("OK globals. Bright: " + String(app.brightness) + " Gamma: " + String(app.gamma) );
 }
 
@@ -73,30 +75,17 @@ void handle_mode_Mood()
     if (tryServerArgI("hue_ts", i))         app.lamp.noiseHue.timeScale = i / 1000.0;
     if (tryServerArgI("brt_ampl", i))       app.lamp.noiseBrt.ampl = i;
     if (tryServerArgI("brt_ts", i))         app.lamp.noiseBrt.timeScale = i / 1000.0;
+    if (tryServerArgI("bright", i))         app.lamp.bright = i;
 
-    app.curr_mode = 0;
     send_OK("OK mode Mood");
 }
 
-
-void handle_mode_Random()
-{
-    int i = 0;
-
-    if (tryServerArgI("skip", i))   app.rand.skip = i;
-    if (tryServerArgI("vari", i))   app.rand.vari = i;
-
-    app.curr_mode = 1;
-    send_OK("OK mode Random");
-}
 
 //............................................................................TEST HANDLES
 
 void handle_test()
 {
-    String s = "entering testing mode | prev mode was ";
-    send_OK(s + app.curr_mode);
-    app.curr_mode = 255;
+    String s = "entering testing mode";
 }
 
 //...........................................................................TVCON HANDLES
@@ -106,8 +95,9 @@ void handle_tvcon()
     int i = 0;
     bool b = false;
     
-    if (tryServerArgI("bright", i))    app.console.bright = constrain(i, 0, 255);
-    if (tryServerArgI("blend", i))  app.console.blend  = constrain(i, 0, 255);
+    if (tryServerArgI("bright", i))  app.console.bright = constrain(i, 0, 255);
+    if (tryServerArgI("blend", i))   app.console.blend  = constrain(i, 0, 255);
+    if (tryServerArgI("anim", i))    app.console.anim   = constrain(i, 0, 255);
     
     send_OK("Received /tvcon");
 }
@@ -161,7 +151,6 @@ void InitBackend()
 
     server.on("/global",                handle_global);
     server.on("/mood",                  handle_mode_Mood);
-    server.on("/random",                handle_mode_Random);
     server.on("/test",                  handle_test);
     server.on("/tvcon",                 handle_tvcon);
     server.on("/tvcon/mirror",          handle_tvcon_mirror);
@@ -172,58 +161,3 @@ void InitBackend()
     server.begin();
     Serial.println("OK: Web server started\n");
 }
-
-
-
-
-
-// void handleSetOne()
-// {
-//     if (server.hasArg("color") && server.hasArg("idx"))
-//     {
-//         ui8 i = server.arg("idx").toInt();
-//         CRGB c = htmlToCRGB(server.arg("color"));
-//         leds[i] = c;
-//         FastLED.show();
-//         server.send(200, "text/plain", "LED at " + String(i) + " set to " + server.arg("color"));
-//         SPrint("set pixel %d to %s", i, server.arg("color"));
-//     }
-//     else
-//     {
-//         server.send(400, "text/plain", "Missing parameters. Use color=RRGGBB and idx=0-N");
-//     }
-// }
-
-
-// void handleModeFixed()
-// {
-//     if (server.hasArg("color"))
-//     {
-//         active = htmlToCRGB(server.arg("color"));
-//         server.send(200, "text/plain", "LED ALL set to " + server.arg("color"));
-//     }
-//     mode = 2;
-// }
-
-
-
-// void handleModeRunning()
-// {
-//     if (server.hasArg("delay"))
-//     {
-//         runningDelay = server.arg("delay").toInt();
-//         server.send(200, "text/plain", "Running Mode set delay to " + String(runningDelay));
-//     }
-//     if (server.hasArg("fade"))
-//     {
-//         runningFade = server.arg("fade").toInt();
-//         server.send(200, "text/plain", "Running Mode set fade to " + String(runningFade));
-//     }
-//     if (server.hasArg("color"))
-//     {
-//         active = htmlToCRGB(server.arg("color"));
-//         server.send(200, "text/plain", "Color set to " + server.arg("color"));
-//     }
-//     server.send(200, "text/plain", "Mode set to Running");
-//     mode = 0;
-// }
