@@ -24,6 +24,13 @@
 
     <!-- Blazar Lamp Mode Controls -->
     <div id="mode_blazar-controls" class="mode-controls">
+
+      <div class="control-inrow">
+        <label for="val-channel">Brightness</label>
+        <input type="range" id="val-channel" min="0" max="255" value="250" onchange="Blazar.OnParamChange(this, '', 'bright')">
+      </div>
+      <br><hr><br>
+
       <div class="button-grid">
         <button class="color-button" style="--color: #ff0000; background-color: var(--color);" onclick="Blazar.OnColorButton(this)">Ruby</button>
         <button class="color-button" style="--color: #ff00ea; background-color: var(--color);" onclick="Blazar.OnColorButton(this)">Cat</button>
@@ -35,6 +42,7 @@
         <button class="color-button" style="--color: #000000; color: #ffffff; background-color: var(--color);" onclick="Blazar.OnColorButton(this)">OFF</button>
       </div>
       <br>
+
       <div class="boxed-controls">
         <label class="toggle-norm">Flicker<input type="checkbox" id="toggle-norm" onclick="Blazar.FlickerToggle(this)"></label>
         <div id="flicker-fields" style="display: none;">
@@ -93,6 +101,10 @@
           <label for="sat-channel">Randomize</label>
           <input type="checkbox" id="rand-idx" onchange="TVConsole.OnToggle(this)">
         </div>
+        <div class="control-inrow">
+        <label for="blend-speed">Animation N Speed</label>
+        <input id="anim-speed" type="number" min="0" max="255" value="2" style="width: 5ch; font-size: 1.07em;" onchange="TVConsole.OnParamChange(this, '', 'anim')">
+      </div>
         <br><hr>
         <div id="palette-list" class="button-list"></div>
       </div>

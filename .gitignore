@@ -1,2 +1,5 @@
 .pio
 .vscode/
+
+# the frontend should be rebuilded from minification script in root dir
+data/

@@ -63,6 +63,14 @@ const Blazar = {
 
     FlickerParamChange(input, param) {
         do_fetch(`/mood?${param}=${input.value}`);
+    },
+
+
+    OnParamChange(input, subroute, param) {
+        const value = input.value;
+        const route = subroute ? `/mood/${subroute}` : `/mood`;
+        const request = `${route}?${param}=${value}`;
+        do_fetch(request);
     }
 
 }; // ============================================================================ END Blazar
