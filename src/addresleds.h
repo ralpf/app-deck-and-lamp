@@ -16,7 +16,7 @@ class AddresLeds
     TBlendType    blend = TBlendType::LINEARBLEND;
 
     float f = 255.0 / COUNT;    // used to map COUNT of leds on [0, 255] range
-    ui8   bright = 0xFF;        // used for fill
+    ui8   bright = 160;        // used for fill
     ui8   animIdx;              // used for fill
 
     ui8*  gammaLUT = nullptr;   // 256 element LUT array. Can be null
