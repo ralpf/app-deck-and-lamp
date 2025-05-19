@@ -106,16 +106,15 @@ class AddresLeds
     protected:
     virtual void _SetRGB(ui16 idx, CRGB rgb)
     {
+        // can add more filters or corrections
         idx = constrain(idx, 0, COUNT-1);
         ui8 gammaBright = bright;
 
         if (gammaLUT != nullptr)        // gamma correction
         {
             rgb = CRGB(gammaLUT[rgb.r], gammaLUT[rgb.g], gammaLUT[rgb.b]);
-            gammaBright = gammaLUT[gammaBright];
+            gammaBright = gammaLUT[gammaBright];   // bright is 'static'
         }
-        // can add more filters or corrections
-        // apply bright
         leds[idx] = rgb.nscale8(gammaBright);
     }
 };
