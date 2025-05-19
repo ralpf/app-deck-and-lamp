@@ -8,7 +8,7 @@ class AddresLedsRnd : public AddresLeds<PIN, COUNT>
 {
 
     public:  // inherited methods because of template class
-    using AddresLeds<PIN, COUNT>::SetBrightness;
+    using AddresLeds<PIN, COUNT>::OnUpdate;
     using AddresLeds<PIN, COUNT>::SetPalette;
     using AddresLeds<PIN, COUNT>::SetPaletteFX;
     using AddresLeds<PIN, COUNT>::SetColor;
@@ -23,6 +23,7 @@ class AddresLedsRnd : public AddresLeds<PIN, COUNT>
     public:
     AddresLedsRnd() : AddresLeds<PIN, COUNT>()
     {
+        for (ui16 i = 0; i < COUNT; ++i) randIdxs[i] = i;
         // Fisher-Yates shuffle algorithm
         for (ui16 i = COUNT - 1; i > 0; --i)
         {

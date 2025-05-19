@@ -16,9 +16,8 @@ class AddresLeds
     TBlendType    blend = TBlendType::LINEARBLEND;
 
     float f = 255.0 / COUNT;    // used to map COUNT of leds on [0, 255] range
-    ui16  index;                // palette index for fill
-    ui8   speed;                // used for fill
     ui8   bright = 0xFF;        // used for fill
+    ui8   animIdx;              // used for fill
 
     ui8*  gammaLUT = nullptr;   // 256 element LUT array. Can be null
 
@@ -32,10 +31,14 @@ class AddresLeds
 
  
     public:                     // METHODS
-    void SetBrightness(const ui8 brightness)
+    void OnUpdate(const ui8 brightness, const ui8 animSpeed, const ui8 animSkip)
     {
-        // NOTE: must call every update. 
+        // NOTE: must call every update.
+        static ui16 k;
+        if (animSkip && ++k % animSkip != 0) return;  // skip every
         this->bright = brightness;
+        if (animSpeed > 0) animIdx += animSpeed;
+        else               animIdx  = 0;
     }
 
     void SetPalette(const CRGBPalette16& pal16)
@@ -89,11 +92,14 @@ class AddresLeds
 
 
     private:
-    void ApplyPalette(ui16 offsetIdx = 0)
+    void ApplyPalette()
     {
         const ui8 MAX = 0xFF;
         for (ui16 i = 0; i < COUNT; ++i)
-            _SetRGB( i, ColorFromPalette(palette, i * f + offsetIdx, MAX, blend) );
+        {
+            ui8 idx = i * f + animIdx;
+            _SetRGB( i, ColorFromPalette(palette, idx, MAX, blend) );
+        }
     }
 
     
