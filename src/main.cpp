@@ -25,7 +25,6 @@
 AddresLedsRnd<LED_TVCON_PIN, LED_TVCON_COUNT> ledsConsole;
 AddresLeds   <LED_DBALL_PIN, LED_DBALL_COUNT> ledsBlazar;
 
-bool updateLeds;
 bool recalculateLUT;                // for gamma correction
 ui8  gammaLUT[256];                 // for gamma correction
 
@@ -117,8 +116,7 @@ void loop()
     Loop_BlazarLamp();
     Loop_TVConsole();
 
-    if (updateLeds) FastLED.show();
-    updateLeds = false;
+    FastLED.show();
 }
 
 //......................................................................LED
@@ -133,7 +131,6 @@ void Loop_BlazarLamp()
 
     ledsBlazar.SetColor(col);
     app.lamp.actualColor = rgb_2_UI32(col);
-    updateLeds = true;
 }
 
 
@@ -161,8 +158,6 @@ void Loop_TVConsole()
             ledsConsole.SetPaletteFX(pal, app.console.blend);
             break;
     }
-
-    updateLeds = true;
 }
 
 

@@ -14,7 +14,7 @@ struct CmpNoise
 struct BlazarLamp
 {
     ui32 color32 = 0x00FF00FF;
-    ui32 actualColor;               // the color applied to lamp
+    ui32 actualColor;               // the color applied to lamp. It can flicker, and will not match BlazarLamp.color32
     bool is_fliker;
     ui8  bright = 250;
     ui8  blend  = 24;
@@ -25,7 +25,7 @@ struct BlazarLamp
 
 struct TVConsole
 {
-    ui8  bright = 140;
+    ui8  bright = 109;
     ui8  blend  = 24;
     ui8  anim   = 0;
 
@@ -40,9 +40,9 @@ struct StateData
 {
     enum class DeviceMode { Lamp, Console, Globals /*keep last*/ };
     // global
-    ui8   brightness = 200;       // overlays other brightness, global mult
+    ui8   brightness = 200;       // overlays other led brightness, global mult
     ui8   animSkip = 8;           // this will scale down the addressed leds animations
-    float gamma    = 2.2;
+    float gamma    = 2;           // a int 22 shoulb be send for 2.2
 
     // containers
     BlazarLamp lamp;
