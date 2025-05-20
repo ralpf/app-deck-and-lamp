@@ -112,6 +112,12 @@ main {
   text-align: right;
 }
 
+.control-inrow input[type="number"] {
+  width: 5ch;           /* or fixed px if preferred */
+  font-size: 1.05em;
+  /*text-align: right;    /* optional */
+}
+
 .control-inrow input[type="range"] {
   flex: 0 0 60%;
 }

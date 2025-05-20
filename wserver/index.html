@@ -14,16 +14,16 @@
     <div class="dropdown-big">
       <label for="main-dropdown">Device Control</label>
       <select id="main-dropdown" onchange="Main.ModeChanged(this.value)">
-        <option value="mode_blazar" selected>Blazar</option>
-        <option value="mode_console">Console</option>
-        <option value="mode_global">Globals</option>
-        <option value="mode_other">Other (nw)</option>
+        <option value="_mode_blazar" selected>Blazar</option>
+        <option value="_mode_console">Console</option>
+        <option value="_mode_global">Globals</option>
+        <option value="_mode_other">Other (nw)</option>
       </select>
     </div>
 
 
-    <!-- Blazar Lamp Mode Controls -->
-    <div id="mode_blazar-controls" class="mode-controls">
+    <!------------------------------------------------- Blazar Lamp Mode Controls -->
+    <div id="_mode_blazar_controls" class="mode-controls">
 
       <div class="control-inrow">
         <label for="val-channel">Brightness</label>
@@ -56,8 +56,8 @@
     </div>
 
 
-    <!-- TV Console Mode Controls -->
-    <div id="mode_console-controls" class="mode-controls" style="display: none;">
+    <!------------------------------------------------- TV Console Mode Controls -->
+    <div id="_mode_console_controls" class="mode-controls" style="display: none;">
 
       <div class="control-inrow">  <!-- label and control in one line -->
         <label for="submode_console">Type</label>  <!-- Submode select -->
@@ -75,7 +75,7 @@
       
       <div class="control-inrow">
         <label for="blend-speed">Palette Blend N Speed</label>
-        <input id="blend-speed" type="number" min="0" max="255" value="24" style="width: 5ch; font-size: 1.07em;" onchange="TVConsole.OnParamChange(this, '', 'blend')">
+        <input id="blend-speed" type="number" min="0" max="255" value="24" onchange="TVConsole.OnParamChange(this, '', 'blend')">
       </div>
       
       <br><br>
@@ -103,7 +103,7 @@
         </div>
         <div class="control-inrow">
         <label for="blend-speed">Animation N Speed</label>
-        <input id="anim-speed" type="number" min="0" max="255" value="2" style="width: 5ch; font-size: 1.07em;" onchange="TVConsole.OnParamChange(this, '', 'anim')">
+        <input id="anim-speed" type="number" min="0" max="255" value="2" onchange="TVConsole.OnParamChange(this, '', 'anim')">
       </div>
         <br><hr>
         <div id="palette-list" class="button-list"></div>
@@ -111,19 +111,19 @@
     </div>
 
 
-    <!-- HSV Mode Controls do nothing -->
-    <div id="mode_global-controls" class="mode-controls" style="display: none;">
+    <!------------------------------------------------- GLOBAL Mode Controls -->
+    <div id="_mode_global_controls" class="mode-controls" style="display: none;">
       <div class="control-inrow">
-        <label for="hue-slider">Hue</label>
-        <input type="range" id="hue-slider" min="0" max="360" value="180">
+        <label for="_bright">Brightness</label>
+        <input type="range" id="_bright" min="0" max="255" value="200" onchange="Main.OnParamChange(this, 'bright')">
       </div>
       <div class="control-inrow">
-        <label for="saturation-slider">Saturation</label>
-        <input type="range" id="saturation-slider" min="0" max="100" value="80">
+        <label for="_gamma">Gamma * 10</label>
+        <input type="number" id="_gamma" min="1" max="50" value="20" onchange="Main.OnParamChange(this, 'gamma')">
       </div>
       <div class="control-inrow">
-        <label for="value-slider">Value</label>
-        <input type="range" id="value-slider" min="0" max="100" value="90">
+        <label for="_animSkip">Animation Skipped Frames</label>
+        <input type="number" id="_animSkip" min="0" max="100" value="8" onchange="Main.OnParamChange(this, 'animSkip')">
       </div>
     </div>
 

@@ -34,11 +34,18 @@ const Main = {
         // hide all mode control sections
         document.querySelectorAll('.mode-controls').forEach(x => { x.style.display = 'none'; });
         // show the selected mode's controls
-        const selectedControls = document.getElementById(`${mode}-controls`);
+        const selectedControls = document.getElementById(`${mode}_controls`);
         if (selectedControls) selectedControls.style.display = 'block';
         // first time settings apply
         if (mode === 'mode_console') TVConsole.TryApplyAllOnce();
         console.log(`Main Dropdown mode changed to ${mode}`)
+    },
+
+
+    OnParamChange(input, param) {
+        const value = input.value;
+        const request = `/global?${param}=${value}`;
+        do_fetch(request);
     },
 
 
