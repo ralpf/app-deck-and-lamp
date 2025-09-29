@@ -36,6 +36,13 @@ struct TVConsole
 };
 
 
+struct Metrics
+{
+    ui16 freeStack;               // bytes
+    ui16 jsonSize;                // the size of sync data
+};
+
+
 struct StateData
 {
     enum class DeviceMode { Lamp, Console, Globals /*keep last*/ };
@@ -49,4 +56,6 @@ struct StateData
     TVConsole console;
 };
 
+
 extern StateData app;
+const char* app_fetchStateJson();
