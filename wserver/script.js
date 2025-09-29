@@ -27,7 +27,7 @@ const Main = {
 
     ModeChanged(mode) {
         // INIT - trigger pallete name fetch
-        if (paletteNamesLoaded === false && mode === "mode_console") {
+        if (paletteNamesLoaded === false && mode === "_mode_console") {
             paletteNamesLoaded = true;
             this.LoadPaletteNames();
         }
@@ -113,7 +113,7 @@ const TVConsole = {
 
 
     OnSubmodeChanged(submode) {
-        const parent = document.getElementById('mode_console-controls');
+        const parent = document.getElementById('_mode_console_controls');
         // Hide all divs with id starting with "submode_"
         Array.from(parent.children).forEach(child => {
             if (child.id?.startsWith('submode_'))
@@ -121,13 +121,13 @@ const TVConsole = {
         });
         // Show the one that matches the selected submode
         const target = document.getElementById(submode);
-        if (target) target.style.display = 'block';
+        target.style.display = 'block';
         console.log(`TVConsole change submode = ${submode}`)
         // Call submode parameters
         let request = "";
-        if (submode === "submode_mirror_blazar") request = `/tvcon/mirror`; else
-        if (submode === "submode_palette")       request = `/tvcon/palette?idx=${this.palette_idx_selected}&irand=${this.randEnable}`; else
-        if (submode === "submode_hsv")           request = `/tvcon/hsv?hue=${this.control_hue}&sat=${this.control_sat}`;
+        if (submode === "_submode_mirror_blazar") request = `/tvcon/mirror`; else
+        if (submode === "_submode_palette")       request = `/tvcon/palette?idx=${this.palette_idx_selected}&irand=${this.randEnable}`; else
+        if (submode === "_submode_hsv")           request = `/tvcon/hsv?hue=${this.control_hue}&sat=${this.control_sat}`;
         do_fetch(request);
     },
 

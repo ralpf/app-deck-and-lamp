@@ -62,9 +62,9 @@
       <div class="control-inrow">  <!-- label and control in one line -->
         <label for="submode_console">Type</label>  <!-- Submode select -->
         <select id="submode_console" class="dropdown-norm" onchange="TVConsole.OnSubmodeChanged(this.value)">
-          <option value="submode_mirror_blazar" selected>Mirror Blazar</option>
-          <option value="submode_palette">Palette</option>
-          <option value="submode_hsv">HSV</option>
+          <option value="_submode_mirror_blazar" selected>Mirror Blazar</option>
+          <option value="_submode_palette">Palette</option>
+          <option value="_submode_hsv">HSV</option>
         </select>
       </div>
 
@@ -80,10 +80,10 @@
       
       <br><br>
 
-      <div id="submode_mirror_blazar" style="display: none;">
+      <div id="_submode_mirror_blazar" style="display: none;">
       </div>
 
-      <div id="submode_hsv" style="display: none;">
+      <div id="_submode_hsv" style="display: none;">
         <div class="control-inrow">
           <label for="hue-channel">Hue</label>
           <input type="range" id="hue-channel" min="0" max="255" value="200" onchange="TVConsole.OnParamChange(this, 'hsv', 'hue')">
@@ -94,7 +94,7 @@
         </div>
       </div>
 
-      <div id="submode_palette" style="display: none;">
+      <div id="_submode_palette" style="display: none;">
         <label>All Palettes</label>  <!-- List of available palletes; Will fill by script -->
         <br><br>
         <div class="toggle-norm">
