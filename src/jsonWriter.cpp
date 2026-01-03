@@ -1,16 +1,20 @@
 #include "jsonWriter.h"
+#include "Assert.h"
 #include <cstdlib>
+
 
 #define OBJ 0
 #define ARR 1
 
+
 JsonWriter json;    // the singletone object
 
 
+//..............................................................
 
 void JsonWriter::writeC(const char ch)
 {
-    if (cursor >= CAP) return;
+    ASSERT(cursor < CAP, "buffer is full");
     buffer[cursor++] = ch;
 }
 
@@ -20,12 +24,13 @@ void JsonWriter::writeS(const char* str)
     char ch;
     while (ch = *str)
     {
-        if (cursor >= CAP) return;
+        ASSERT(cursor < CAP, "buffer is full");
         buffer[cursor++] = ch;
         str++;
     }
 }
 
+//..............................................................
 
 void JsonWriter::begin_root()
 {
@@ -37,9 +42,42 @@ void JsonWriter::begin_root()
 }
 
 
+void JsonWriter::end()
+{
+    ASSERT(depth >= 0, "no root object to close");
+    auto type = typeField[depth];
+    ASSERT(type == OBJ || type == ARR, "unexpected type");
+
+    writeC(type == OBJ ? '}' : ']');
+
+    if (--depth < 0) buffer[cursor] = 0;
+}
+
+
+const char* JsonWriter::get_cstring() const
+{
+    ASSERT(cursor > 0, "buffer is empty, no data");
+    ASSERT(depth < 0, "json object not closed (ended)");
+    ASSERT(cursor < CAP, "json object did not fit in buffer");
+    ASSERT(buffer[cursor] == 0, "json object c-string not null terminated");
+    return buffer;
+}
+
+
+ui16 JsonWriter::get_size() const
+{
+    ASSERT(cursor > 0, "buffer is empty, no data");
+    ASSERT(cursor < CAP, "json object did not fit in buffer");
+    return cursor;
+}
+
+//..............................................................
+
 void JsonWriter::field_obj(const char* name)
 {
-    if (depth >= MAXDEP) return;
+    ASSERT(depth >= 0, "start root object first");
+    ASSERT(depth < MAXDEP, "depth overflow");
+
     if (firstField[depth] == false) writeC(',');
     firstField[depth] = false;
 
@@ -48,15 +86,18 @@ void JsonWriter::field_obj(const char* name)
     writeC('"');
     writeC(':');
     writeC('{');
-
+    
     depth++;
     firstField[depth] = true;
-    typeField[depth] = OBJ;
+    typeField [depth] = OBJ;
 }
 
 
-void JsonWriter::field_i(const char* name, i32 val)
+void JsonWriter::field_arr(const char* name)
 {
+    ASSERT(depth >= 0, "start root object first");
+    ASSERT(depth < MAXDEP, "depth overflow");
+
     if (firstField[depth] == false) writeC(',');
     firstField[depth] = false;
     
@@ -64,7 +105,30 @@ void JsonWriter::field_i(const char* name, i32 val)
     writeS(name);
     writeC('"');
     writeC(':');
+    writeC('[');
+    
+    depth++;
+    firstField[depth] = true;
+    typeField [depth] = ARR;
+}
 
+
+void JsonWriter::field_i(const char* name, i32 val)
+{
+    ASSERT(depth >= 0, "start root object first");
+    ASSERT(depth < MAXDEP, "depth overflow");
+    
+    if (firstField[depth] == false) writeC(',');
+    firstField[depth] = false;
+    
+    if (typeField[depth] == OBJ)
+    {
+        writeC('"');
+        writeS(name);
+        writeC('"');
+        writeC(':');
+    }
+    
     char tmp[16];
     itoa(val, tmp, 10);  // base 10
     writeS(tmp);
@@ -73,13 +137,19 @@ void JsonWriter::field_i(const char* name, i32 val)
 
 void JsonWriter::field_ui(const char* name, ui32 val)
 {
+    ASSERT(depth >= 0, "start root object first");
+    ASSERT(depth < MAXDEP, "depth overflow");
+
     if (firstField[depth] == false) writeC(',');
     firstField[depth] = false;
 
-    writeC('"');
-    writeS(name);
-    writeC('"');
-    writeC(':');
+    if (typeField[depth] == OBJ)
+    {
+        writeC('"');
+        writeS(name);
+        writeC('"');
+        writeC(':');
+    }
 
     char tmp[16];
     utoa(val, tmp, 10);  // base 10
@@ -89,13 +159,19 @@ void JsonWriter::field_ui(const char* name, ui32 val)
 
 void JsonWriter::field_b(const char* name, bool val)
 {
+    ASSERT(depth >= 0, "start root object first");
+    ASSERT(depth < MAXDEP, "depth overflow");
+
     if (firstField[depth] == false) writeC(',');
     firstField[depth] = false;
 
-    writeC('"');
-    writeS(name);
-    writeC('"');
-    writeC(':');
+    if (typeField[depth] == OBJ)
+    {
+        writeC('"');
+        writeS(name);
+        writeC('"');
+        writeC(':');
+    }
 
     writeS(val ? "true": "false");
 }
