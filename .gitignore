@@ -3,3 +3,6 @@
 
 # the frontend should be rebuilded from minification script in root dir
 data/
+# test folder for local compiled code
+test-cpp/
+
