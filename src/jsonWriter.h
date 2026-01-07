@@ -22,21 +22,18 @@ class JsonWriter
     void writeC(const char ch);                     // helper func, append character
     void writeS(const char* str);                   // helper func, append string
 
-    private:
+    public:
     static constexpr ui16 BUFFSZ = 2048;        // fixed internal buffer size
     static constexpr ui8  MAXDEP = 16;          // max objects nesting depth
     static constexpr ui16 CAP    = BUFFSZ - 1;  // capacity, leave 1 slot for \0
 
     private:
-    char buffer[BUFFSZ];
+    char* buffer;                   // a single buffer exists in cpp
     ui16 cursor;                    // pos in buffer
     i8   depth = -1;                // curr obj depth
     ui8  typeField[MAXDEP];         // store 0 for objects and 1 for arrays. Resolves the closing token to be } or ]
     bool firstField[MAXDEP];        // used for ',' comma logic
 
-    private:  // CTOR
+    public:  // CTOR
     JsonWriter();                   // force private ctor so we have only one instance
 };
-
-
-extern JsonWriter json;             // the singletone instance

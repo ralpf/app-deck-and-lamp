@@ -1,5 +1,5 @@
 #include "jsonWriter.h"
-#include "Assert.h"
+#include "assertCrash.h"
 #include <cstdlib>
 
 
@@ -7,7 +7,15 @@
 #define ARR 1
 
 
-JsonWriter json;    // the singletone object
+char singleBuffer[JsonWriter::BUFFSZ];
+
+
+//..............................................................
+
+JsonWriter::JsonWriter()
+{
+    buffer = singleBuffer;
+}
 
 
 //..............................................................
