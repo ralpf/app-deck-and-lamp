@@ -4,25 +4,21 @@
 #include <assertCrash.h>
 
 #include <WiFi.h>
+#include <SPIFFS.h>
+#include <FS.h>
 #include <ESPAsyncWebServer.h>
-
-// here we expect per project defines (use platform.ini for this)
-#ifndef HTML_URL
-  #error "HTML_URL not defined. Contains URL to the real index.html"
-#endif
 
 #ifndef IP_ADDRESS_4
   #error "IP_ADDRESS_4 not defined. It sets the last byte of 192.168.100.* "
 #endif
 
-//#define HTML_URL ""
+//...........................................................................STATIC
 
-// this will be moved away and sent as function args
+// think how to better store credentials
 static const char* ssid = "StarNet - munteanu.v84";
 static const char* password = "48575443A95B41AA";
 
-// this is the html stub
-static const char* index_html;
+// the html is hosted on esp32 in fylesystem as index.html
 
 // the fancy async web server
 static AsyncWebServer server(80);
@@ -54,46 +50,12 @@ void init_wifi_server()
 }
 
 
-void init_http_frontend()
+void init_frontend()
 {
-    // NOTE, we don't host anymore files in SPIFFS,
-    // but provide a small html stub instead
-    // also note here we use C compiler feature of string concatination (auto s = "hello " "compiler";)
-    index_html = 
-R"HTML(
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Loading Frontend</title>
-  <meta http-equiv="refresh"
-        content="0; url=")HTML" HTML_URL R"HTML(">
-
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      font-family: sans-serif;
-      background: #111;
-      color: #ddd;
-    }
-
-    #disclaimer {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      font-size: 16px;
-    }
-  </style>
-</head>
-<body>
-  <div id="disclaimer">Caching Frontend Files…</div>
-</body>
-</html>
-)HTML";
+    bool ok = SPIFFS.begin(true);
+    ASSERT(ok, "ERR: SPIFFS file system mount failed");
 }
+
 
 bool validate_endpoint(const char* endpoint)
 {
@@ -102,12 +64,20 @@ bool validate_endpoint(const char* endpoint)
     return true;
 }
 
-//..........................................................................TEST-FUNC
+//.........................................................................ENDPOINTS
 
-void test_handler(HttpRequest& request)
+void endpoint_test_handler(HttpRequest& request)
 {
     SPrint("Received [test] request");
     // not sending respoce will cause auto responce 200 Ok
+}
+
+
+void endpoint_root_handler(HttpRequest& request)
+{
+    // this raw send does send 200 code itself
+    // also using raw will bypass custom auto-send responce in asyncBackend_register_endpoint()
+    request.raw()->send(SPIFFS, "/index.html", "text/html");
 }
 
 //........................................................................HEADER-FUNC
@@ -148,10 +118,8 @@ void asyncBackend_register_endpoint(HttpRequest::Method type, const char* endpoi
 void asyncBackend_init()
 {
     init_wifi_server();
-    init_http_frontend();
+    init_frontend();
     isInited = true;
-    // attach a test func
-    asyncBackend_register_endpoint(HttpRequest::Method::Get, "/test", test_handler);
 }
 
 
@@ -159,6 +127,10 @@ void asyncBackend_start()
 {
     ASSERT(isInited, "ERR: init server before starting it");
     ASSERT(!isStarted, "ERR: server was already started");
+
+    // endpoints available in all projects
+    asyncBackend_register_endpoint(HttpRequest::Method::Get, "/", endpoint_root_handler);
+    asyncBackend_register_endpoint(HttpRequest::Method::Get, "/test", endpoint_test_handler);
 
     server.begin();
     isStarted = true;

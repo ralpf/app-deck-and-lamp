@@ -14,3 +14,8 @@ void asyncBackend_register_endpoint(HttpRequest::Method type, const char* endpoi
 
 // call after all endpoints are attached
 void asyncBackend_start();
+
+
+
+// note: I like the C style feel when we have exposed small funcs instead of overengineering the usecase
+// C simplicity is awesome

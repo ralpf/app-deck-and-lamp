@@ -13,7 +13,9 @@ class HttpRequest
     public:     // METHOD
     Method method() const;
     bool   wasResponceSent() const;
+    AsyncWebServerRequest* raw();   // get raw pointer to request. The user should send responce codes by itself
 
+    void send(int code, const char* mimeType, const char* body);
     void send_ok(const char* msg);
     void send_fail(const char* msg);
     void send_json(const char* json);
