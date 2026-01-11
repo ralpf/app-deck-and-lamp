@@ -1,7 +1,8 @@
 ## ESP32 program for Blazar project
 
 ### How to build
-+ add frontend HTML code into data/index.html  
++ after each frontend build, the index.html has to be reuploaded because of hashed names. They are required for chaching burst
++ replace HTML code in data/index.html  
 + fix paths so it's starts with https://ralpf.github.io for ex
   ```
     <link rel="icon" href="https://ralpf.github.io/web-blazar/assets/icon-DiSFa2Td.png"/>
