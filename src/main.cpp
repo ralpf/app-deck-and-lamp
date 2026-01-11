@@ -11,6 +11,10 @@
 #include "addresledRnd.h"
 #include "palettes.h"
 
+#include "jsonWriter.h"
+#include "settings.h"
+#include "asyncBackend.h"
+
 
 
 #define VERSION "0.8.5"
@@ -85,6 +89,24 @@ void setup()
     SPrint("\n\n--------------------[[ ESP32 \"Blazar\" Lamp ]]--------------------");
     SPrint("\n\n----------------------[[ + TV Console supp ]]----------------------");
     SPrint("                                                   Version %s\n", VERSION);
+
+    SPrint("!!! testing json writer...");
+    JsonWriter json;
+    
+    Settings set;
+    set.AddJsonData(json);
+    
+    SPrint("size is %d", json.get_size());
+    SPrint("data:\n%s", json.get_cstring());
+
+
+    SPrint("!!! async backend...");
+    asyncBackend_init();
+    asyncBackend_start();
+
+
+    //xxxxxxxxxxxxxxxxxxxxxxxxxx RET
+    return;
     InitWiFiServer(201, AnimateWiFiStartup);      // ip adress 201 ; check with platformio.ini:upload_port
     InitHttpFrontend();
     InitBackend();
@@ -106,6 +128,12 @@ void setup()
 void loop()
 {
     delay(1);
+    SPrint('.');
+    //SPrint("loop ms %d", millis());
+
+    delay(1000);
+    //xxxxxxxxxxxxxxxxxxxxxxxxxx RET
+    return;
 
     server.handleClient();
     ArduinoOTA.handle();
