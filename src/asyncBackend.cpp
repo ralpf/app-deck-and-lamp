@@ -84,6 +84,7 @@ void endpoint_root_handler(HttpRequest& request)
 
 void asyncBackend_register_endpoint(HttpRequest::Method type, const char* endpoint, HttpRequestHandler handlerFunc)
 {
+    // just resolve method type
     const char* methodName = "";
     WebRequestMethod method = HTTP_ANY;
     switch (type)
@@ -98,12 +99,12 @@ void asyncBackend_register_endpoint(HttpRequest::Method type, const char* endpoi
         break;
         default: ASSERT(false, "unexpected method type");
     }
-    
+    // sanity check
     ASSERT(isInited, "ERR: init first before attaching endpoints");
     ASSERT(validate_endpoint(endpoint), "ERR: invalid endpoint");
     ASSERT(!isStarted, "ERR: can't attach more endpoints after server was started");
     SPrint("[AsyncBackend]: new endpoint -> %s: '%s'", methodName, endpoint);
-
+    // do register
     server.on(endpoint, method,
         [handlerFunc](AsyncWebServerRequest* req) {     // lambda
             HttpRequest r(req);                         // wrapper class
@@ -112,6 +113,12 @@ void asyncBackend_register_endpoint(HttpRequest::Method type, const char* endpoi
                 r.send_ok("Ok");
         }
     );
+}
+
+
+void asyncBackend_register_endpoint(const char* endpoint, HttpRequestHandler handlerFunc)
+{
+    asyncBackend_register_endpoint(HttpRequest::Method::Get, endpoint, handlerFunc);
 }
 
 

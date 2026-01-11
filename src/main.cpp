@@ -3,8 +3,6 @@
 #include <ArduinoOTA.h>
 #include "PrintHelper.h"
 
-#include "httpserver.h"
-#include "backend.h"
 #include "state.h"
 #include "utils.h"
 #include "addresleds.h"
@@ -14,6 +12,7 @@
 #include "jsonWriter.h"
 #include "settings.h"
 #include "asyncBackend.h"
+#include "endpoints.h"
 
 
 
@@ -66,23 +65,8 @@ void InitPalettes()
 }
 
 
-void AnimateWiFiStartup(float seconds)
-{
-    static ui8 i = 1;
-    ui8 k = ++i * 5;
-    ledsConsole.SetColor(CRGB::Green);
-
-    if (seconds > 0)
-        ledsConsole.SetColor(CRGB::Gold, k, k + 5);
-    else        // connected
-        ledsConsole.SetColor(CRGB::Yellow, 0, k + 5);
-
-    FastLED.show();
-}
-
-    
 //.........................................................................................ESP
-    
+
 void setup()
 {
     // Starts Serial
@@ -100,16 +84,16 @@ void setup()
     SPrint("data:\n%s", json.get_cstring());
 
 
-    SPrint("!!! async backend...");
     asyncBackend_init();
     asyncBackend_start();
+    endpoints_init();
 
 
     //xxxxxxxxxxxxxxxxxxxxxxxxxx RET
     return;
-    InitWiFiServer(201, AnimateWiFiStartup);      // ip adress 201 ; check with platformio.ini:upload_port
-    InitHttpFrontend();
-    InitBackend();
+    //InitWiFiServer(201, AnimateWiFiStartup);      // ip adress 201 ; check with platformio.ini:upload_port
+    //InitHttpFrontend();
+    //InitBackend();
     InitState();
     InitPalettes();
     // init OTA
@@ -135,7 +119,7 @@ void loop()
     //xxxxxxxxxxxxxxxxxxxxxxxxxx RET
     return;
 
-    server.handleClient();
+    //server.handleClient();
     ArduinoOTA.handle();
     
     FastLED.setBrightness(app.brightness);

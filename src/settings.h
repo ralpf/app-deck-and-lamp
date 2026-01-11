@@ -18,7 +18,7 @@ class IJsonWritable
 struct GlobSettings : IJsonWritable
 {
     ui8 luma;
-    
+
     // interface
     void AddJsonData(JsonWriter& json) override;
 };
@@ -28,7 +28,7 @@ struct GlobSettings : IJsonWritable
 struct LampSettings : IJsonWritable
 {
     ui8 luma;
-    
+
     // interface
     void AddJsonData(JsonWriter& json) override;
 };
@@ -38,7 +38,7 @@ struct LampSettings : IJsonWritable
 struct DeckSettings : IJsonWritable
 {
     ui8 luma;
-    
+
     // interface
     void AddJsonData(JsonWriter& json) override;
 };

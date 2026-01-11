@@ -11,14 +11,14 @@ class HttpRequest
     enum class Method : ui8 { Get, Post };
 
     public:     // METHOD
-    Method method() const;
+    //Method method() const;
     bool   wasResponceSent() const;
     AsyncWebServerRequest* raw();   // get raw pointer to request. The user should send responce codes by itself
 
     void send(int code, const char* mimeType, const char* body);
     void send_ok(const char* msg);
     void send_fail(const char* msg);
-    void send_json(const char* json);
+    //void send_json(const char* json);
 
     bool try_arg_i(const char* name, i32&   out) const;
     bool try_arg_f(const char* name, float& out) const;

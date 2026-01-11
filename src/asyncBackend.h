@@ -10,6 +10,7 @@ using HttpRequestHandler = void (*)(HttpRequest& request);
 void asyncBackend_init();
 
 // use this to add endpoints
+void asyncBackend_register_endpoint(const char* endpoint, HttpRequestHandler handlerFunc);
 void asyncBackend_register_endpoint(HttpRequest::Method type, const char* endpoint, HttpRequestHandler handlerFunc);
 
 // call after all endpoints are attached
