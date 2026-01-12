@@ -35,6 +35,23 @@ bool HttpRequest::try_arg_f(const char* name, float& out) const
 }
 
 
+bool HttpRequest::try_arg_b(const char* name, bool&  out) const
+{
+    auto webParam = request->getParam(name);
+    if (!webParam) return false;
+
+    auto buff = webParam->value().c_str();
+    switch (buff[0])
+    {
+        case '0': out = false; break;
+        case '1': out = true;  break;
+        default : return false;
+    }
+    // add tests for 'true' and 'false' (maybe)
+    return true;
+}
+
+
 bool HttpRequest::try_arg_s(const char* name, char* outBuffer, ui16 sz) const
 {
     auto webParam = request->getParam(name);
@@ -48,6 +65,17 @@ bool HttpRequest::try_arg_s(const char* name, char* outBuffer, ui16 sz) const
 
 void HttpRequest::send_ok(const char* msg)    { this->send(200, "text/plain", msg); }
 void HttpRequest::send_fail(const char* msg)  { this->send(400, "text/plain", msg); }
+void HttpRequest::send_notFound()             { this->send(404, "text/plain", "Not Found"); }
 
 bool HttpRequest::wasResponceSent()       const { return responceSent; }
 AsyncWebServerRequest* HttpRequest::raw() { responceSent = true; return request; }
+
+
+void HttpRequest::log_to_serial()
+{
+    if (!request) return;
+    Serial.print("[WS] ");
+    Serial.print(request->methodToString());
+    Serial.print("   ");
+    Serial.println(request->url());
+}

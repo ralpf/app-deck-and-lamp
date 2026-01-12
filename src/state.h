@@ -56,5 +56,5 @@ struct StateData
 };
 
 
-extern StateData app;
+extern StateData oldapp;
 const char* app_fetchStateJson();

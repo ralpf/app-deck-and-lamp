@@ -3,6 +3,9 @@
 
 
 
+Settings app;   // main app state data
+
+
 void GlobSettings::AddJsonData(JsonWriter& json)
 {
     json.field_obj("glob");

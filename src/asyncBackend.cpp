@@ -108,6 +108,7 @@ void asyncBackend_register_endpoint(HttpRequest::Method type, const char* endpoi
     server.on(endpoint, method,
         [handlerFunc](AsyncWebServerRequest* req) {     // lambda
             HttpRequest r(req);                         // wrapper class
+            r.log_to_serial();                          // write using Serial. Hope to minimize race condition in threads
             handlerFunc(r);                             // invoke hanlder with wrapper as arg
             if (r.wasResponceSent() == false)           // autoresponce on forget to respond
                 r.send_ok("Ok");
@@ -121,6 +122,19 @@ void asyncBackend_register_endpoint(const char* endpoint, HttpRequestHandler han
     asyncBackend_register_endpoint(HttpRequest::Method::Get, endpoint, handlerFunc);
 }
 
+//......................................................................NOT-FOUND
+
+void register_endpoint_not_found()
+{
+    server.onNotFound([](AsyncWebServerRequest* req) {
+        HttpRequest r(req);
+        Serial.print("404  ");
+        r.log_to_serial();
+        r.send_notFound();
+    });
+}
+
+//.........................................................................HEADER
 
 void asyncBackend_init()
 {
@@ -138,6 +152,8 @@ void asyncBackend_start()
     // endpoints available in all projects
     asyncBackend_register_endpoint(HttpRequest::Method::Get, "/", endpoint_root_handler);
     asyncBackend_register_endpoint(HttpRequest::Method::Get, "/test", endpoint_test_handler);
+    // invalid endpoints
+    register_endpoint_not_found();
 
     server.begin();
     isStarted = true;

@@ -1,25 +1,43 @@
 #include "utils.h"
 
 
-ui32 html_2_UI32(String htmlColor)  // pass copy by value
+ui32 html_2_ui32(const char* buff)  // pass copy by value
 {
+    // lambda
+    auto hex = [](char c) -> int {
+        if (c >= '0' && c <= '9') return c - '0';
+        if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+        if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+        return -1;
+    };
+
     ui32 err_col = 0xFF8080;
+    if (!buff) return err_col;
 
-    auto len = htmlColor.length();
+    ui16 len = 0;
+    while (buff[len]) ++len;
+
     if (len != 6 && len != 7) return err_col;
-    if (len == 7 && htmlColor[0] != '#') return err_col;
+    if (len == 7)
+    {
+        if (buff[0] != '#') return err_col;
+        buff++;
+    }
 
-    if (len == 7) htmlColor = htmlColor.substring(1, 7);
+    int h0 = hex(buff[0]), h1 = hex(buff[1]);
+    int h2 = hex(buff[2]), h3 = hex(buff[3]);
+    int h4 = hex(buff[4]), h5 = hex(buff[5]);
+    if (h0 < 0 || h1 < 0 || h2 < 0 || h3 < 0 || h4 < 0 || h5 < 0) return err_col;
 
-    ui8 r = strtol(htmlColor.substring(0, 2).c_str(), NULL, 16);
-    ui8 g = strtol(htmlColor.substring(2, 4).c_str(), NULL, 16);
-    ui8 b = strtol(htmlColor.substring(4, 6).c_str(), NULL, 16);
+    ui8 r = (ui8)((h0 << 4) | h1);
+    ui8 g = (ui8)((h2 << 4) | h3);
+    ui8 b = (ui8)((h4 << 4) | h5);
 
-    return (r << 16) | (g << 8) | b;
+    return ((ui32)r << 16) | ((ui32)g << 8) | b;
 }
 
 
-ui32 rgb_2_UI32(CRGB rgb)
+ui32 rgb_2_ui32(CRGB rgb)
 {
     return ((ui32)rgb.r << 16) | ((ui32)rgb.g << 8) | rgb.b;
 }

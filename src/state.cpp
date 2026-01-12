@@ -1,4 +1,4 @@
 #include "state.h"
 
-StateData app;
+StateData oldapp;
 

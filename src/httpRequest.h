@@ -18,11 +18,15 @@ class HttpRequest
     void send(int code, const char* mimeType, const char* body);
     void send_ok(const char* msg);
     void send_fail(const char* msg);
+    void send_notFound();
     //void send_json(const char* json);
 
     bool try_arg_i(const char* name, i32&   out) const;
     bool try_arg_f(const char* name, float& out) const;
+    bool try_arg_b(const char* name, bool&  out) const;
     bool try_arg_s(const char* name, char*  outBuffer, ui16 sz) const;
+
+    void log_to_serial();
 
     public:     // CTOR
     HttpRequest(AsyncWebServerRequest* req);

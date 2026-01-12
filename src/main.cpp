@@ -47,21 +47,21 @@ CRGB FlickerColor(const CRGB col);
 
 void InitState()
 {
-    app.lamp.is_fliker = true;
+    oldapp.lamp.is_fliker = true;
 
-    app.lamp.noiseBrt.ampl = 80;
-    app.lamp.noiseBrt.timeScale = 1;
+    oldapp.lamp.noiseBrt.ampl = 80;
+    oldapp.lamp.noiseBrt.timeScale = 1;
 
-    app.lamp.noiseHue.ampl = 30;
-    app.lamp.noiseHue.timeScale = 1;
-    app.lamp.noiseHue.offset = 1000;
+    oldapp.lamp.noiseHue.ampl = 30;
+    oldapp.lamp.noiseHue.timeScale = 1;
+    oldapp.lamp.noiseHue.offset = 1000;
 }
 
 
 void InitPalettes()
 {
     palette_init();
-    app.console.palette.namesJson = palette_names_json();
+    oldapp.console.palette.namesJson = palette_names_json();
 }
 
 
@@ -102,7 +102,7 @@ void setup()
     // init leds
     ledsBlazar.SetColor(CRGB::Red);
     ledsConsole.SetColor(CRGB::Blue);
-    FastLED.setBrightness(app.brightness);
+    FastLED.setBrightness(oldapp.brightness);
     FastLED.show();
     SPrint("OK: Leds inited \tBlazar %i | TVConsole %i\n", LED_DBALL_COUNT, LED_TVCON_COUNT);
     // update LUT gamma correction
@@ -122,7 +122,7 @@ void loop()
     //server.handleClient();
     ArduinoOTA.handle();
     
-    FastLED.setBrightness(app.brightness);
+    FastLED.setBrightness(oldapp.brightness);
     if (recalculateLUT) RecaluculateGammaLUT();
 
     Loop_BlazarLamp();
@@ -135,39 +135,39 @@ void loop()
 
 void Loop_BlazarLamp()
 {
-    ledsBlazar.OnUpdate(app.lamp.bright, 0, 0);  // force no skip and no anim idx
+    ledsBlazar.OnUpdate(oldapp.lamp.bright, 0, 0);  // force no skip and no anim idx
     CRGB col;
-    col.setColorCode(app.lamp.color32);
-    if (app.lamp.is_fliker)
+    col.setColorCode(oldapp.lamp.color32);
+    if (oldapp.lamp.is_fliker)
         col = FlickerColor(col);
 
     ledsBlazar.SetColor(col);
-    app.lamp.actualColor = rgb_2_UI32(col);
+    oldapp.lamp.actualColor = rgb_2_ui32(col);
 }
 
 
 void Loop_TVConsole()
 {
-    ledsConsole.OnUpdate(app.console.bright, app.console.anim, app.animSkip);
-    ledsConsole.setRandEnabled(app.console.palette.irand);
+    ledsConsole.OnUpdate(oldapp.console.bright, oldapp.console.anim, oldapp.animSkip);
+    ledsConsole.setRandEnabled(oldapp.console.palette.irand);
     CRGB rgb;
 
-    switch (app.console.mode)
+    switch (oldapp.console.mode)
     {
         case TVConsole::Mode::HSV:
-            hsv2rgb( CHSV(app.console.hsv.h, app.console.hsv.s, app.console.bright) , rgb);
+            hsv2rgb( CHSV(oldapp.console.hsv.h, oldapp.console.hsv.s, oldapp.console.bright) , rgb);
             ledsConsole.SetColor(rgb);
             break;
         
         case TVConsole::Mode::MirrorLamp:
-            rgb.setColorCode(app.lamp.actualColor);
+            rgb.setColorCode(oldapp.lamp.actualColor);
             ledsConsole.SetColor(rgb);
             break;
 
         case TVConsole::Mode::Palette:
             // TODO: v~~~ optimize to not call every time
-            auto pal = palette_from_idx(app.console.palette.idx);
-            ledsConsole.SetPaletteFX(pal, app.console.blend);
+            auto pal = palette_from_idx(oldapp.console.palette.idx);
+            ledsConsole.SetPaletteFX(pal, oldapp.console.blend);
             break;
     }
 }
@@ -178,7 +178,7 @@ void Loop_TVConsole()
 void RecaluculateGammaLUT()
 {
     recalculateLUT = false;
-    updateGammaLutTable256(gammaLUT, app.gamma);
+    updateGammaLutTable256(gammaLUT, oldapp.gamma);
     ledsConsole.SetGammaLutTable(gammaLUT);
     ledsBlazar.SetGammaLutTable(gammaLUT);
 }
@@ -196,8 +196,8 @@ CRGB FlickerColor(CRGB rgb)
 {
     CHSV hsv;
     rgb2hsv(rgb, hsv);
-    ui8 h = SampleNoise(app.lamp.noiseHue, hsv.h, true);
-    ui8 v = SampleNoise(app.lamp.noiseBrt, hsv.v, false);
+    ui8 h = SampleNoise(oldapp.lamp.noiseHue, hsv.h, true);
+    ui8 v = SampleNoise(oldapp.lamp.noiseBrt, hsv.v, false);
     hsv2rgb(CHSV(h, hsv.s, v), rgb);
     return rgb;
 }
