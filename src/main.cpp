@@ -16,7 +16,7 @@
 
 
 
-#define VERSION "0.8.5"
+#define VERSION "0.8.9"
 #define LED_DBALL_PIN   14          // GPIO14 data pin
 #define LED_DBALL_COUNT 12          // led ring of 6x2
 #define LED_TVCON_PIN   26
@@ -71,8 +71,8 @@ void setup()
 {
     // Starts Serial
     SPrint("\n\n--------------------[[ ESP32 \"Blazar\" Lamp ]]--------------------");
-    SPrint("\n\n----------------------[[ + TV Console supp ]]----------------------");
-    SPrint("                                                   Version %s\n", VERSION);
+    SPrint("\n\n---------------------[[ + TV Console supp ]]----------------------");
+    SPrint("                                                      Version %s\n", VERSION);
 
     SPrint("!!! testing json writer...");
     JsonWriter json;
@@ -85,8 +85,8 @@ void setup()
 
 
     asyncBackend_init();
-    asyncBackend_start();
     endpoints_init();
+    asyncBackend_start();
 
 
     //xxxxxxxxxxxxxxxxxxxxxxxxxx RET

@@ -26,7 +26,7 @@ class HttpRequest
     bool try_arg_b(const char* name, bool&  out) const;
     bool try_arg_s(const char* name, char*  outBuffer, ui16 sz) const;
 
-    void log_to_serial();
+    void log_to_serial(ui16 responceCode);
 
     public:     // CTOR
     HttpRequest(AsyncWebServerRequest* req);

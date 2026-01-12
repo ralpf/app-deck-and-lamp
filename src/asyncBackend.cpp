@@ -108,7 +108,7 @@ void asyncBackend_register_endpoint(HttpRequest::Method type, const char* endpoi
     server.on(endpoint, method,
         [handlerFunc](AsyncWebServerRequest* req) {     // lambda
             HttpRequest r(req);                         // wrapper class
-            r.log_to_serial();                          // write using Serial. Hope to minimize race condition in threads
+            r.log_to_serial(200);                       // write using Serial. Hope to minimize race condition in threads
             handlerFunc(r);                             // invoke hanlder with wrapper as arg
             if (r.wasResponceSent() == false)           // autoresponce on forget to respond
                 r.send_ok("Ok");
@@ -128,8 +128,7 @@ void register_endpoint_not_found()
 {
     server.onNotFound([](AsyncWebServerRequest* req) {
         HttpRequest r(req);
-        Serial.print("404  ");
-        r.log_to_serial();
+        r.log_to_serial(404);
         r.send_notFound();
     });
 }

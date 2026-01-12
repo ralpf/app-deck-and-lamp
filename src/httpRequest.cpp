@@ -71,11 +71,25 @@ bool HttpRequest::wasResponceSent()       const { return responceSent; }
 AsyncWebServerRequest* HttpRequest::raw() { responceSent = true; return request; }
 
 
-void HttpRequest::log_to_serial()
+void HttpRequest::log_to_serial(ui16 responceCode)
 {
     if (!request) return;
-    Serial.print("[WS] ");
+    Serial.print('\n');
+    Serial.print(responceCode);
+    Serial.print(" [WS] ");
     Serial.print(request->methodToString());
     Serial.print("   ");
-    Serial.println(request->url());
+    Serial.print(request->url());
+    if (request->params())
+    {
+        for (ui8 i = 0; i < request->params(); ++i)
+        {
+            auto param = request->getParam(i);
+            Serial.print( i ? '&' : '?');
+            Serial.print(param->name());
+            Serial.print('=');
+            Serial.print(param->value());
+        }
+    }
+    Serial.println();
 }

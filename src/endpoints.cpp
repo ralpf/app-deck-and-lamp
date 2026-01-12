@@ -5,7 +5,7 @@
 #include "utils.h"
 
 
-//............................................................GLOBAL HANDLERS
+//..........................................................SETTINGS HANDLERS
 
 void on_global(HttpRequest& req)
 {
