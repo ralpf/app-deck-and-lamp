@@ -1,108 +1,92 @@
 #pragma once
 #include "Types.h"
+#include "jsonWriter.h"
 
 
-class JsonWriter;
 
-//.....................................................INTERFACE
+// all stuff is nested inside
+// only 1 100% lifetime instance exists
 
-class IJsonWritable
+struct Settings
 {
-    public:
-    virtual ~IJsonWritable() = default;
-    virtual void AddJsonData(JsonWriter& json) = 0;
-};
+    //...................................................SHARED-TYPE
 
-//..........................................................TYPE
-
-struct GlobSettings : IJsonWritable
-{
-    ui8 luma;
-
-    // interface
-    void AddJsonData(JsonWriter& json) override;
-};
-
-//..........................................................TYPE
-
-
-
-
-struct LampSettings : IJsonWritable
-{
-    // inner enum
-    enum class Mode : ui8 { Mood, Sliders, Picker, Pallete };
-
-    // inner type
     struct Flicker
     {
         ui8 ampl;   // amplitude
         ui8 spd;    // speed
     };
 
-    // inner type
-    struct Mood
-    {
-        ui32 color32;  
-    };
-
-    // inner type
     struct Sliders
     {
         ui8 hue;
         ui8 sat;
     };
-    
-    // inner type
-    struct Palette
+
+    struct Pickers
     {
         static constexpr ui8 max = 8;
-        ui32 colors[max];
+        ui32 cols32[max];
     };
 
-    // top level storage
-    ui8 luma = 200;     // lamp brightess
+    //.....................................................MODE-TYPE
 
-    // flicker setup, shared between modes
-    bool    flikOn   = false;
-    Flicker flikHue  = { .ampl = 20, .spd = 50 };
-    Flicker flikLuma = { .ampl = 0,  .spd = 0  };
+    struct Global
+    {
+        ui8 luma;
+    };
 
-    Mode mode = Mode::Mood;     // current mode
+    //.....................................................MODE-TYPE
 
-    // per-mode storage with defaults
-    Mood mood = { .color32 = 0xFFD700 };            // random gold color
-    Sliders sliders = { .hue = 200, .sat = 255 };   // max saturation
-    Palette pallete = { .colors = {0xFF00FF, 0} };  // one default color
+    struct Lamp
+    {
+        // inner enum
+        enum class EMode : ui8 { Mood, Sliders, Picker, Pallete };
 
-    // not serialized to json
-    ui32 color32 = 0;           // actual color
+        // inner type
+        struct Mood
+        {
+            ui32 col32;
+        };
 
-    // interface impl
-    void AddJsonData(JsonWriter& json) override;
-};
+        // top level storage
+        ui8 luma = 200;     // lamp brightess
 
-//..........................................................TYPE
+        // flicker setup, shared between modes
+        bool    flikOn   = false;
+        Flicker flikHue  = { .ampl = 20, .spd = 50 };
+        Flicker flikLuma = { .ampl = 0,  .spd = 0  };
 
-struct DeckSettings : IJsonWritable
-{
-    ui8 luma;
+        EMode mode = EMode::Mood;     // current mode
 
-    // interface
-    void AddJsonData(JsonWriter& json) override;
-};
+        // per-mode storage with defaults
+        Mood mood       = { .col32 = 0xFFD700 };        // random gold color
+        Sliders sliders = { .hue = 200, .sat = 255 };   // max saturation
+        Pickers pickers = { .cols32 = {0xFF00FF, 0} };  // one default color
 
-//..........................................................TYPE
+        // not serialized to json
+        ui32 col32 = 0;                                 // actual color
+    };
 
-struct Settings : IJsonWritable
-{
-    GlobSettings glob;
-    LampSettings lamp;
-    DeckSettings deck;
+    //.....................................................MODE-TYPE
+
+    struct Deck
+    {
+        ui8 luma;
+    };
+
+    //........................................................STORAGE
     
-    void AddJsonData(JsonWriter& json) override;
+    Global glob;
+    Lamp   lamp;
+    Deck   deck;
+
+    //........................................................TO-JSON
+
+    void emit_json(JsonWriter& json);
 };
 
-//........................................................SINGLE
+//.............................................................SINGLE
 
 extern Settings app;
+

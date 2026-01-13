@@ -19,7 +19,7 @@ void on_global(HttpRequest& req)
 void on_lamp(HttpRequest& req)
 {
     i32 i;
-    if (req.try_arg_i("mode", i)) app.lamp.mode = (LampSettings::Mode)i;
+    if (req.try_arg_i("mode", i)) app.lamp.mode = (Settings::Lamp::EMode)i;
     if (req.try_arg_i("luma", i)) app.lamp.luma = i;
 }
 
@@ -27,8 +27,8 @@ void on_lamp_mood(HttpRequest& req)
 {
     const ui8 SZ = 16;
     char buff[SZ];
-    if (req.try_arg_s("col", buff, SZ)) app.lamp.mood.color32 = html_2_ui32(buff);
-    app.lamp.mode = LampSettings::Mode::Mood;
+    if (req.try_arg_s("col", buff, SZ)) app.lamp.mood.col32 = html_2_ui32(buff);
+    app.lamp.mode = Settings::Lamp::EMode::Mood;
 }
 
 void on_lamp_hsv(HttpRequest& req)
@@ -36,7 +36,7 @@ void on_lamp_hsv(HttpRequest& req)
     i32 i;
     if (req.try_arg_i("hue", i)) app.lamp.sliders.hue = i;
     if (req.try_arg_i("sat", i)) app.lamp.sliders.sat = i;
-    app.lamp.mode = LampSettings::Mode::Sliders;
+    app.lamp.mode = Settings::Lamp::EMode::Sliders;
 }
 
 void on_lamp_flicker(HttpRequest& req)

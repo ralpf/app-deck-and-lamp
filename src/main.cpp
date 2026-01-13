@@ -78,7 +78,7 @@ void setup()
     JsonWriter json;
 
     Settings set;
-    set.AddJsonData(json);
+    set.emit_json(json);
 
     SPrint("size is %d", json.get_size());
     SPrint("data:\n%s", json.get_cstring());
