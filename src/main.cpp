@@ -71,15 +71,15 @@ void setup()
 {
     // Starts Serial
     SPrint("\n\n--------------------[[ ESP32 \"Blazar\" Lamp ]]--------------------");
-    SPrint("\n\n---------------------[[ + TV Console supp ]]----------------------");
-    SPrint("                                                      Version %s\n", VERSION);
+    SPrint(  "\n---------------------[[ + TV Console supp ]]----------------------");
+    SPrint("                                                     Version %s\n", VERSION);
 
     SPrint("!!! testing json writer...");
     JsonWriter json;
-    
+
     Settings set;
     set.AddJsonData(json);
-    
+
     SPrint("size is %d", json.get_size());
     SPrint("data:\n%s", json.get_cstring());
 

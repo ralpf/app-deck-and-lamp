@@ -43,21 +43,40 @@ struct LampSettings : IJsonWritable
     // inner type
     struct Mood
     {
-        ui32 color32;
+        ui32 color32;  
+    };
+
+    // inner type
+    struct Sliders
+    {
+        ui8 hue;
+        ui8 sat;
+    };
+    
+    // inner type
+    struct Palette
+    {
+        static constexpr ui8 max = 8;
+        ui32 colors[max];
     };
 
     // top level storage
-    ui8 luma;       // lamp brightess
+    ui8 luma = 200;     // lamp brightess
 
-    bool    flikOn;
-    Flicker flikHue;
-    Flicker flikLuma;
+    // flicker setup, shared between modes
+    bool    flikOn   = false;
+    Flicker flikHue  = { .ampl = 20, .spd = 50 };
+    Flicker flikLuma = { .ampl = 0,  .spd = 0  };
 
-    Mode mode;      // current mode
-    ui32 color32;   // actual color
+    Mode mode = Mode::Mood;     // current mode
 
-    // per-mode storage
-    Mood mood;
+    // per-mode storage with defaults
+    Mood mood = { .color32 = 0xFFD700 };            // random gold color
+    Sliders sliders = { .hue = 200, .sat = 255 };   // max saturation
+    Palette pallete = { .colors = {0xFF00FF, 0} };  // one default color
+
+    // not serialized to json
+    ui32 color32 = 0;           // actual color
 
     // interface impl
     void AddJsonData(JsonWriter& json) override;
