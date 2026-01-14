@@ -18,15 +18,17 @@ void Settings::emit_json(JsonWriter& json)
         json.field_obj("lamp"); {
             json.field_ui("luma", lamp.luma);
 
-            json.field_obj("flikHue"); {
-                json.field_ui("ampl", lamp.flikHue.ampl);
-                json.field_ui("spd", lamp.flikHue.spd);
-            json.end(); }
-            json.field_obj("flikLuma"); {
-                json.field_ui("ampl", lamp.flikLuma.ampl);
-                json.field_ui("spd", lamp.flikLuma.spd);
-            json.end(); }
-            json.field_b("flickOn", lamp.flikOn);
+            json.field_obj("flick"); {
+                json.field_b("isOn", lamp.flik.isOn);
+                json.field_obj("hue"); {
+                    json.field_ui("spd", lamp.flik.hue.spd);
+                    json.field_ui("ampl", lamp.flik.hue.ampl);
+                json.end(); }
+                json.field_obj("sat"); {
+                    json.field_ui("spd", lamp.flik.sat.spd);
+                    json.field_ui("ampl", lamp.flik.sat.ampl);
+                json.end(); }
+            json.end(); } // flick
 
             json.field_ui("mode", (ui32)lamp.mode);
 
@@ -39,19 +41,52 @@ void Settings::emit_json(JsonWriter& json)
                 json.field_ui("sat", lamp.sliders.sat);
             json.end(); }
 
-            json.field_obj("palette"); {
+            json.field_obj("picker"); {
                 json.field_ui("max", Pickers::max);
                 json.field_arr("cols32"); {
                 for (ui8 i = 0; i < Pickers::max; ++i)
                     if (lamp.pickers.cols32[i] != 0)
                         json.field_ui("", lamp.pickers.cols32[i]);
                 json.end(); } // arr
-            json.end(); } // pallete
+            json.end(); } // picker
         json.end(); } // lamp
 
         json.field_obj("deck"); {
             json.field_ui("luma", deck.luma);
-        json.end(); }
+
+            json.field_obj("flick"); {
+                json.field_b("isOn", deck.flik.isOn);
+                json.field_obj("hue"); {
+                    json.field_ui("spd", deck.flik.hue.spd);
+                    json.field_ui("ampl", deck.flik.hue.ampl);
+                json.end(); }
+                json.field_obj("sat"); {
+                    json.field_ui("spd", deck.flik.sat.spd);
+                    json.field_ui("ampl", deck.flik.sat.ampl);
+                json.end(); }
+            json.end(); } // flick
+
+            json.field_ui("mode", (ui32)deck.mode);
+
+            json.field_obj("sliders"); {
+                json.field_ui("hue", deck.sliders.hue);
+                json.field_ui("sat", deck.sliders.sat);
+            json.end(); }
+
+            json.field_obj("picker"); {
+                json.field_ui("max", Pickers::max);
+                json.field_arr("cols32"); {
+                for (ui8 i = 0; i < Pickers::max; ++i)
+                    if (deck.pickers.cols32[i] != 0)
+                        json.field_ui("", deck.pickers.cols32[i]);
+                json.end(); } // arr
+            json.end(); } // picker
+
+            json.field_obj("palette"); {
+                json.field_ui("idx", deck.palette.idx);
+            json.end(); } // palette
+
+        json.end(); } // deck
 
     json.end(); }
 }

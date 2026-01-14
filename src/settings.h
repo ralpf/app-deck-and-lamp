@@ -11,29 +11,36 @@ struct Settings
 {
     //...................................................SHARED-TYPE
 
+    struct Wave
+    {
+        ui8 spd  = 0;   // speed
+        ui8 ampl = 0;   // amplitude
+    };
+
     struct Flicker
     {
-        ui8 ampl;   // amplitude
-        ui8 spd;    // speed
+        bool isOn = false;
+        Wave hue;
+        Wave sat;
     };
 
     struct Sliders
     {
-        ui8 hue;
-        ui8 sat;
+        ui8 hue = 200;
+        ui8 sat = 255;
     };
 
     struct Pickers
     {
         static constexpr ui8 max = 8;
-        ui32 cols32[max];
+        ui32 cols32[max] = {0xFF00FF, 0};
     };
 
     //.....................................................MODE-TYPE
 
     struct Global
     {
-        ui8 luma;
+        ui8 luma = 200;
     };
 
     //.....................................................MODE-TYPE
@@ -46,33 +53,48 @@ struct Settings
         // inner type
         struct Mood
         {
-            ui32 col32;
+            ui32 col32 = 0xFFD700;  // random gold color
         };
 
         // top level storage
         ui8 luma = 200;     // lamp brightess
-
-        // flicker setup, shared between modes
-        bool    flikOn   = false;
-        Flicker flikHue  = { .ampl = 20, .spd = 50 };
-        Flicker flikLuma = { .ampl = 0,  .spd = 0  };
+        Flicker flik;       // shared between modes
 
         EMode mode = EMode::Mood;     // current mode
 
         // per-mode storage with defaults
-        Mood mood       = { .col32 = 0xFFD700 };        // random gold color
-        Sliders sliders = { .hue = 200, .sat = 255 };   // max saturation
-        Pickers pickers = { .cols32 = {0xFF00FF, 0} };  // one default color
+        Mood mood;
+        Sliders sliders;
+        Pickers pickers;
 
         // not serialized to json
         ui32 col32 = 0;                                 // actual color
     };
-
+    
     //.....................................................MODE-TYPE
-
+    
     struct Deck
     {
-        ui8 luma;
+        // inner enum
+        enum class EMode : ui8 { MirrorLamp, Sliders, Picker, Pallete };
+
+        // inner type
+        struct Palette
+        {
+            ui8 idx;
+        };
+
+        // top level storage
+        ui8 luma = 128;     // lamp brightess
+        Flicker flik;       // shared bt modes
+
+        EMode mode = EMode::Pallete;   // current mode
+
+        // per-mode storage with defaults
+        Sliders sliders;
+        Pickers pickers;
+        Palette palette;
+
     };
 
     //........................................................STORAGE

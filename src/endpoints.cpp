@@ -42,11 +42,11 @@ void on_lamp_hsv(HttpRequest& req)
 void on_lamp_flicker(HttpRequest& req)
 {
     i32 i; bool b;
-    if (req.try_arg_b("on",    b)) app.lamp.flikOn = b;
-    if (req.try_arg_i("hSpd",  i)) app.lamp.flikHue.spd = i;
-    if (req.try_arg_i("hAmpl", i)) app.lamp.flikHue.ampl = i;
-    if (req.try_arg_i("lSpd",  i)) app.lamp.flikLuma.spd = i;
-    if (req.try_arg_i("lAmpl", i)) app.lamp.flikLuma.ampl = i;
+    if (req.try_arg_b("on",    b)) app.lamp.flik.isOn = b;
+    if (req.try_arg_i("hSpd",  i)) app.lamp.flik.hue.spd = i;
+    if (req.try_arg_i("hAmpl", i)) app.lamp.flik.hue.ampl = i;
+    if (req.try_arg_i("lSpd",  i)) app.lamp.flik.sat.spd = i;
+    if (req.try_arg_i("lAmpl", i)) app.lamp.flik.sat.ampl = i;
 }
 
 //.............................................................HEADER
