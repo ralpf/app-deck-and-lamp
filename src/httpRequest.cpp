@@ -63,6 +63,22 @@ bool HttpRequest::try_arg_s(const char* name, char* outBuffer, ui16 sz) const
 }
 
 
+bool HttpRequest::try_many (const char* name, void (*func)(ui8 idx, const char* payload))
+{
+    ui8 k = 0;
+    bool wasFound = false;
+    for (ui8 i = 0; i < request->params(); ++i)
+    {
+        auto p = request->getParam(i);
+        if (p->name().equals(name) == false) continue;
+        auto s = p->value();   // store in a local string to prevent dangling pointer to c-str
+        func(k++, s.c_str());
+        wasFound = true;
+    }
+    return wasFound;
+}
+
+
 void HttpRequest::send_ok(const char* msg)    { this->send(200, "text/plain", msg); }
 void HttpRequest::send_fail(const char* msg)  { this->send(400, "text/plain", msg); }
 void HttpRequest::send_notFound()             { this->send(404, "text/plain", "Not Found"); }

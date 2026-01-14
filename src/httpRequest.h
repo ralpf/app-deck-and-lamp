@@ -21,10 +21,11 @@ class HttpRequest
     void send_notFound();
     //void send_json(const char* json);
 
-    bool try_arg_i(const char* name, i32&   out) const;
-    bool try_arg_f(const char* name, float& out) const;
-    bool try_arg_b(const char* name, bool&  out) const;
-    bool try_arg_s(const char* name, char*  outBuffer, ui16 sz) const;
+    bool try_arg_i(const char* name, i32&   out) const;                             // ingegers
+    bool try_arg_f(const char* name, float& out) const;                             // flaots
+    bool try_arg_b(const char* name, bool&  out) const;                             // booleans
+    bool try_arg_s(const char* name, char*  outBuffer, ui16 sz) const;              // strings
+    bool try_many (const char* name, void (*func)(ui8 idx, const char* payload));   // many strings, aka delegate Action<int,string>
 
     void log_to_serial(ui16 responceCode);
 
