@@ -23,22 +23,6 @@ void on_lamp(HttpRequest& req)
     if (req.try_arg_i("luma", i)) app.lamp.luma = i;
 }
 
-void on_lamp_mood(HttpRequest& req)
-{
-    const ui8 SZ = 16;
-    char buff[SZ];
-    if (req.try_arg_s("col", buff, SZ)) app.lamp.mood.col32 = html_2_ui32(buff);
-    app.lamp.mode = Settings::Lamp::EMode::Mood;
-}
-
-void on_lamp_hsv(HttpRequest& req)
-{
-    i32 i;
-    if (req.try_arg_i("hue", i)) app.lamp.sliders.hue = i;
-    if (req.try_arg_i("sat", i)) app.lamp.sliders.sat = i;
-    app.lamp.mode = Settings::Lamp::EMode::Sliders;
-}
-
 void on_lamp_flicker(HttpRequest& req)
 {
     i32 i; bool b;
@@ -49,13 +33,92 @@ void on_lamp_flicker(HttpRequest& req)
     if (req.try_arg_i("lAmpl", i)) app.lamp.flik.sat.ampl = i;
 }
 
-//.............................................................HEADER
+void on_lamp_mood(HttpRequest& req)
+{
+    const ui8 SZ = 16;
+    char buff[SZ];
+    if (req.try_arg_s("col", buff, SZ)) app.lamp.mood.col32 = html_2_ui32(buff);
+    app.lamp.mode = Settings::Lamp::EMode::Mood;
+}
+
+void on_lamp_sliders(HttpRequest& req)
+{
+    i32 i;
+    if (req.try_arg_i("hue", i)) app.lamp.sliders.hue = i;
+    if (req.try_arg_i("sat", i)) app.lamp.sliders.sat = i;
+    app.lamp.mode = Settings::Lamp::EMode::Sliders;
+}
+
+void on_lamp_pickers(HttpRequest& req)
+{
+    for (ui8 i = 0; i < Settings::Pickers::max; ++i) app.lamp.pickers.cols32[i] = 0;    // reset all
+    // non-capturing lambda only
+    req.try_many("col", [](ui8 i, const char* str) {
+        if (i >= Settings::Pickers::max) return;
+        app.lamp.pickers.cols32[i] = html_2_ui32(str);
+    });
+    app.lamp.mode = Settings::Lamp::EMode::Picker;
+}
+
+//..............................................................DECK HANDLERS
+
+void on_deck(HttpRequest& req)
+{
+    i32 i;
+    if (req.try_arg_i("mode", i)) app.deck.mode = (Settings::Deck::EMode)i;
+    if (req.try_arg_i("luma", i)) app.deck.luma = i;
+}
+
+void on_deck_flicker(HttpRequest& req)
+{
+    i32 i; bool b;
+    if (req.try_arg_b("on",    b)) app.deck.flik.isOn = b;
+    if (req.try_arg_i("hSpd",  i)) app.deck.flik.hue.spd = i;
+    if (req.try_arg_i("hAmpl", i)) app.deck.flik.hue.ampl = i;
+    if (req.try_arg_i("lSpd",  i)) app.deck.flik.sat.spd = i;
+    if (req.try_arg_i("lAmpl", i)) app.deck.flik.sat.ampl = i;
+}
+
+void on_deck_mirror(HttpRequest& req)
+{
+    app.deck.mode = Settings::Deck::EMode::MirrorLamp;
+}
+
+void on_deck_sliders(HttpRequest& req)
+{
+    i32 i;
+    if (req.try_arg_i("hue", i)) app.deck.sliders.hue = i;
+    if (req.try_arg_i("sat", i)) app.deck.sliders.sat = i;
+    app.deck.mode = Settings::Deck::EMode::Sliders;
+}
+
+void on_deck_pickers(HttpRequest& req)
+{
+    for (ui8 i = 0; i < Settings::Pickers::max; ++i) app.deck.pickers.cols32[i] = 0;    // reset all
+    // non-capturing lambda only
+    req.try_many("col", [](ui8 i, const char* str) {
+        if (i >= Settings::Pickers::max) return;
+        app.deck.pickers.cols32[i] = html_2_ui32(str);
+    });
+    app.deck.mode = Settings::Deck::EMode::Picker;
+}
+
+//.....................................................................HEADER
 
 void endpoints_init()
 {
+    // glob
     asyncBackend_register_endpoint("/esp/glob", on_global);
+    // lamp
     asyncBackend_register_endpoint("/esp/lamp", on_lamp);
-    asyncBackend_register_endpoint("/esp/lamp/mood", on_lamp_mood);
-    asyncBackend_register_endpoint("/esp/lamp/hsv", on_lamp_hsv);
     asyncBackend_register_endpoint("/esp/lamp/flik", on_lamp_flicker);
+    asyncBackend_register_endpoint("/esp/lamp/mood", on_lamp_mood);
+    asyncBackend_register_endpoint("/esp/lamp/sliders", on_lamp_sliders);
+    asyncBackend_register_endpoint("/esp/lamp/pickers", on_lamp_pickers);
+    // deck
+    asyncBackend_register_endpoint("/esp/deck", on_deck);
+    asyncBackend_register_endpoint("/esp/deck/flik", on_deck_flicker);
+    asyncBackend_register_endpoint("/esp/deck/mirror", on_deck_mirror);
+    asyncBackend_register_endpoint("/esp/deck/sliders", on_deck_sliders);
+    asyncBackend_register_endpoint("/esp/deck/pickers", on_deck_pickers);
 }

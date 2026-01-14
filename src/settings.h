@@ -48,7 +48,7 @@ struct Settings
     struct Lamp
     {
         // inner enum
-        enum class EMode : ui8 { Mood, Sliders, Picker, Pallete };
+        enum class EMode : ui8 { Mood, Sliders, Picker };
 
         // inner type
         struct Mood
@@ -76,19 +76,19 @@ struct Settings
     struct Deck
     {
         // inner enum
-        enum class EMode : ui8 { MirrorLamp, Sliders, Picker, Pallete };
+        enum class EMode : ui8 { MirrorLamp, Sliders, Picker, Palette };
 
         // inner type
         struct Palette
         {
-            ui8 idx;
+            ui8 idx = 0;
         };
 
         // top level storage
         ui8 luma = 128;     // lamp brightess
         Flicker flik;       // shared bt modes
 
-        EMode mode = EMode::Pallete;   // current mode
+        EMode mode = EMode::Palette;   // current mode
 
         // per-mode storage with defaults
         Sliders sliders;
