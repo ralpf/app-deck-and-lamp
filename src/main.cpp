@@ -25,24 +25,23 @@
 
 
 
-//.................................................................................ALLOC-LEDS
+//........................................................................................ALLOC-LEDS
 
 Leds<LED_DECK_PIN, LED_DECK_COUNT> ledsDeck;
 Leds<LED_LAMP_PIN, LED_LAMP_COUNT> ledsLamp;
 
-//.................................................................................GAMMA-CORR
+//........................................................................................GAMMA-CORR
 
-bool willRecalculateLUT;                // for gamma correction
-ui8  gammaLUT[256];                     // global gamma table
+ui8  gammaLUT[256];                                                     // global gamma table
 
-//.........................................................................FORWARD-DECLARATION
+//...............................................................................FORWARD-DECLARATION
 
 void recaluculate_gamma_LUT();
 void loop_lamp();
 void loop_deck();
 CHSV flicker_color_hsv(Settings::Flicker flik, CHSV hsv);
 
-//.........................................................................................ESP
+//...............................................................................................ESP
 
 void setup()
 {
@@ -75,7 +74,7 @@ void loop()
     timeSrv.update();
 
     FastLED.setBrightness(app.glob.luma);
-    if (willRecalculateLUT) recaluculate_gamma_LUT();
+    if (app.glob.update_gamme) recaluculate_gamma_LUT();
 
     loop_lamp();
     loop_deck();
@@ -193,7 +192,7 @@ void recaluculate_gamma_LUT()
     update_gammaLUT_table256(gammaLUT, app.glob.gamma);
     ledsDeck.SetGammaLutTable(gammaLUT);
     ledsLamp.SetGammaLutTable(gammaLUT);
-    willRecalculateLUT = false;
+    app.glob.update_gamme = false;
 }
 
 

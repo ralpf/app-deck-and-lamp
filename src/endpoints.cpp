@@ -5,16 +5,20 @@
 #include "utils.h"
 
 
-//..........................................................SETTINGS HANDLERS
+//.................................................................................SETTINGS HANDLERS
 
 void on_global(HttpRequest& req)
 {
     i32 i; float f;
     if (req.try_arg_i("luma", i))  app.glob.luma = i;
-    if (req.try_arg_f("gamma", f)) app.glob.gamma = f;
+    if (req.try_arg_f("gamma", f))
+    {
+        app.glob.gamma = f;
+        app.glob.update_gamme = true;
+    }
 }
 
-//..............................................................LAMP HANDLERS
+//.....................................................................................LAMP HANDLERS
 
 
 void on_lamp(HttpRequest& req)
@@ -61,7 +65,7 @@ void on_lamp_pickers(HttpRequest& req)
     app.lamp.mode = Settings::Lamp::EMode::Picker;
 }
 
-//..............................................................DECK HANDLERS
+//.....................................................................................DECK HANDLERS
 
 void on_deck(HttpRequest& req)
 {
@@ -112,7 +116,7 @@ void on_deck_palette(HttpRequest& req)
     app.deck.mode = Settings::Deck::EMode::Palette;
 }
 
-//.....................................................................HEADER
+//............................................................................................HEADER
 
 void endpoints_init()
 {

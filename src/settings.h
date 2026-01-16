@@ -46,6 +46,8 @@ struct Settings
     {
         ui8 luma = 200;
         float gamma = 1;
+
+        bool update_gamme = false;     // NO-EMIT-JSON
     };
 
     //.....................................................MODE-TYPE
