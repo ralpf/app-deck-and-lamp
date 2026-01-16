@@ -1,6 +1,6 @@
 #include "jsonWriter.h"
 #include "assertCrash.h"
-#include <cstdlib>
+#include <Arduino.h>
 
 
 #define OBJ 0
@@ -32,7 +32,8 @@ void JsonWriter::writeS(const char* str)
     char ch;
     while (ch = *str)
     {
-        ASSERT(cursor < CAP, "buffer is full");
+        ASSERT(cursor < CAP - 1, "buffer is full");
+        if (ch == '"' || ch == '\\') buffer[cursor++] = '\\';
         buffer[cursor++] = ch;
         str++;
     }
@@ -40,7 +41,7 @@ void JsonWriter::writeS(const char* str)
 
 //..............................................................
 
-void JsonWriter::begin_root()
+void JsonWriter::root()
 {
     cursor = 0;
     depth = 0;
@@ -94,7 +95,7 @@ void JsonWriter::field_obj(const char* name)
     writeC('"');
     writeC(':');
     writeC('{');
-    
+
     depth++;
     firstField[depth] = true;
     typeField [depth] = OBJ;
@@ -108,13 +109,13 @@ void JsonWriter::field_arr(const char* name)
 
     if (firstField[depth] == false) writeC(',');
     firstField[depth] = false;
-    
+
     writeC('"');
     writeS(name);
     writeC('"');
     writeC(':');
     writeC('[');
-    
+
     depth++;
     firstField[depth] = true;
     typeField [depth] = ARR;
@@ -125,10 +126,10 @@ void JsonWriter::field_i(const char* name, i32 val)
 {
     ASSERT(depth >= 0, "start root object first");
     ASSERT(depth < MAXDEP, "depth overflow");
-    
+
     if (firstField[depth] == false) writeC(',');
     firstField[depth] = false;
-    
+
     if (typeField[depth] == OBJ)
     {
         writeC('"');
@@ -136,7 +137,7 @@ void JsonWriter::field_i(const char* name, i32 val)
         writeC('"');
         writeC(':');
     }
-    
+
     char tmp[16];
     itoa(val, tmp, 10);  // base 10
     writeS(tmp);
@@ -147,10 +148,10 @@ void JsonWriter::field_ui(const char* name, ui32 val)
 {
     ASSERT(depth >= 0, "start root object first");
     ASSERT(depth < MAXDEP, "depth overflow");
-
+    
     if (firstField[depth] == false) writeC(',');
     firstField[depth] = false;
-
+    
     if (typeField[depth] == OBJ)
     {
         writeC('"');
@@ -158,9 +159,31 @@ void JsonWriter::field_ui(const char* name, ui32 val)
         writeC('"');
         writeC(':');
     }
-
+    
     char tmp[16];
     utoa(val, tmp, 10);  // base 10
+    writeS(tmp);
+}
+
+
+void JsonWriter::field_f(const char* name, float val)
+{
+    ASSERT(depth >= 0, "start root object first");
+    ASSERT(depth < MAXDEP, "depth overflow");
+    
+    if (firstField[depth] == false) writeC(',');
+    firstField[depth] = false;
+    
+    if (typeField[depth] == OBJ)
+    {
+        writeC('"');
+        writeS(name);
+        writeC('"');
+        writeC(':');
+    }
+    
+    char tmp[32];
+    dtostrf(val, 0, 4, tmp);
     writeS(tmp);
 }
 
@@ -182,4 +205,26 @@ void JsonWriter::field_b(const char* name, bool val)
     }
 
     writeS(val ? "true": "false");
+}
+
+
+void JsonWriter::field_s(const char* name, const char* val)
+{
+    ASSERT(depth >= 0, "start root object first");
+    ASSERT(depth < MAXDEP, "depth overflow");
+
+    if (firstField[depth] == false) writeC(',');
+    firstField[depth] = false;
+
+    if (typeField[depth] == OBJ)
+    {
+        writeC('"');
+        writeS(name);
+        writeC('"');
+        writeC(':');
+    }
+
+    writeC('"');
+    writeS(val);
+    writeC('"');
 }

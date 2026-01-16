@@ -1,50 +1,45 @@
 #include "palettes.h"
 #include "palettes_data.h"
+#include "jsonWriter.h"
 
 
 // NOTE: decided to ditch unordered map, for simplicity
 // It required custom comparators and hashers because of c strings
 
-CRGBPalette16 pals[PALETE_COUNT];
-const char *   ids[PALETE_COUNT];
+//................................................................TYPE
 
-
-
-//=============================== METHODS =================================
-
-void add_palette(const CRGBPalette16& pal, const char* name)
+struct PaletteEntry
 {
-    static ui8 idx;
-    if (idx >= PALETE_COUNT) return;
-    pals[idx] = pal;
-    ids[idx] = name;
-    idx++;
-}
+    const TProgmemRGBGradientPalette_byte* pal;
+    const char* name;
+};
 
+//..............................................................STATIC
 
-void palette_init()
-{
-    // a bit slopy, but easy to reorder
-    add_palette(palData_MultiPink,      "Multi Pink");
-    add_palette(palData_RedLava,        "Red Lava");
-    add_palette(palData_MarineBlue,     "Marine Blue");
-    add_palette(palData_RedYellowWhite, "ReD-Yellow-White");
-    add_palette(palData_Spectrum,       "Spectrum");
-    add_palette(palData_Turq,           "Turq");
-    add_palette(palData_Sunset_Real,    "Sunset Real");
-}
+static const PaletteEntry kAll[] = {
+    { palData_MultiPink,      "Multi Pink" },
+    { palData_RedLava,        "Red Lava" },
+    { palData_MarineBlue,     "Marine Blue" },
+    { palData_RedYellowWhite, "ReD-Yellow-White" },
+    { palData_Spectrum,       "Spectrum" },
+    { palData_Turq,           "Turq" },
+    { palData_Sunset_Real,    "Sunset Real" },
+};
 
+static constexpr ui8 kCount = sizeof(kAll) / sizeof(kAll[0]);
+
+//..............................................................HEADER
 
 ui8 palette_count()
 {
-    return PALETE_COUNT;
+    return kCount;
 }
 
 
 i16 palette_idx(const char* name)
 {
-    for (ui8 i = 0; i < PALETE_COUNT; ++i)
-        if (strcmp(name, ids[i]) == 0)
+    for (ui8 i = 0; i < kCount; ++i)
+        if (strcmp(name, kAll[i].name) == 0)
             return i;
     return -1;
 }
@@ -52,34 +47,31 @@ i16 palette_idx(const char* name)
 
 const char* palette_name_from_idx(ui8 idx)
 {
-    return ids[ idx % PALETE_COUNT ];
+    return kAll[ idx % kCount ].name;
 }
 
 
-const char* palette_names_json()
+const char* palette_emit_names_json(JsonWriter& json)
 {
-    String json = "[";
-    for (ui8 i = 0; i < PALETE_COUNT; ++i)
-    {
-        json += "\"";
-        json += palette_name_from_idx(i);
-        json += "\"";
-        if (i < PALETE_COUNT-1) json += ",";
-    }
-    json += "]";
-    return strdup(json.c_str());
+    json.root(); {
+        json.field_arr("pals");
+        for (ui8 i = 0; i < kCount; ++i)
+            json.field_s("", kAll[i].name);
+        json.end();
+    json.end(); }
+    return json.get_cstring();
 }
 
 
-const CRGBPalette16& palette_from_idx(ui8 idx)
+const CRGBPalette16 palette_from_idx(ui8 idx)
 {
-    return pals[ idx % PALETE_COUNT ];
+    return kAll[ idx % kCount ].pal;
 }
 
 
-const CRGBPalette16& palette_from_name(const char* name)
+const CRGBPalette16 palette_from_name(const char* name)
 {
     static const CRGBPalette16 errorPal = palData_special_Eror;
     auto i = palette_idx(name);
-    return i >= 0 ? pals[i] : errorPal;
+    return i >= 0 ? kAll[i].pal : errorPal;
 }

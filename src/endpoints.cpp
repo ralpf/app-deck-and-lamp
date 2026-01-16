@@ -9,8 +9,9 @@
 
 void on_global(HttpRequest& req)
 {
-    i32 i;
-    if (req.try_arg_i("luma", i)) app.glob.luma = i;
+    i32 i; float f;
+    if (req.try_arg_i("luma", i))  app.glob.luma = i;
+    if (req.try_arg_f("gamma", f)) app.glob.gamma = f;
 }
 
 //..............................................................LAMP HANDLERS
@@ -25,19 +26,19 @@ void on_lamp(HttpRequest& req)
 
 void on_lamp_flicker(HttpRequest& req)
 {
-    i32 i; bool b;
+    i32 i; bool b; float f;
     if (req.try_arg_b("on",    b)) app.lamp.flik.isOn = b;
-    if (req.try_arg_i("hSpd",  i)) app.lamp.flik.hue.spd = i;
+    if (req.try_arg_f("hSpd",  f)) app.lamp.flik.hue.spd = f;
     if (req.try_arg_i("hAmpl", i)) app.lamp.flik.hue.ampl = i;
-    if (req.try_arg_i("lSpd",  i)) app.lamp.flik.sat.spd = i;
-    if (req.try_arg_i("lAmpl", i)) app.lamp.flik.sat.ampl = i;
+    if (req.try_arg_f("lSpd",  f)) app.lamp.flik.val.spd = f;
+    if (req.try_arg_i("lAmpl", i)) app.lamp.flik.val.ampl = i;
 }
 
 void on_lamp_mood(HttpRequest& req)
 {
     const ui8 SZ = 16;
     char buff[SZ];
-    if (req.try_arg_s("col", buff, SZ)) app.lamp.mood.col32 = html_2_ui32(buff);
+    if (req.try_arg_s("col", buff, SZ)) app.lamp.mood.rgb32 = html_2_rgb_2_ui32(buff);
     app.lamp.mode = Settings::Lamp::EMode::Mood;
 }
 
@@ -55,7 +56,7 @@ void on_lamp_pickers(HttpRequest& req)
     // non-capturing lambda only
     req.try_many("col", [](ui8 i, const char* str) {
         if (i >= Settings::Pickers::max) return;
-        app.lamp.pickers.cols32[i] = html_2_ui32(str);
+        app.lamp.pickers.cols32[i] = html_2_rgb_2_ui32(str);
     });
     app.lamp.mode = Settings::Lamp::EMode::Picker;
 }
@@ -71,12 +72,12 @@ void on_deck(HttpRequest& req)
 
 void on_deck_flicker(HttpRequest& req)
 {
-    i32 i; bool b;
+    i32 i; bool b; float f;
     if (req.try_arg_b("on",    b)) app.deck.flik.isOn = b;
-    if (req.try_arg_i("hSpd",  i)) app.deck.flik.hue.spd = i;
+    if (req.try_arg_f("hSpd",  f)) app.deck.flik.hue.spd = f;
     if (req.try_arg_i("hAmpl", i)) app.deck.flik.hue.ampl = i;
-    if (req.try_arg_i("lSpd",  i)) app.deck.flik.sat.spd = i;
-    if (req.try_arg_i("lAmpl", i)) app.deck.flik.sat.ampl = i;
+    if (req.try_arg_f("lSpd",  f)) app.deck.flik.val.spd = f;
+    if (req.try_arg_i("lAmpl", i)) app.deck.flik.val.ampl = i;
 }
 
 void on_deck_mirror(HttpRequest& req)
@@ -98,9 +99,17 @@ void on_deck_pickers(HttpRequest& req)
     // non-capturing lambda only
     req.try_many("col", [](ui8 i, const char* str) {
         if (i >= Settings::Pickers::max) return;
-        app.deck.pickers.cols32[i] = html_2_ui32(str);
+        app.deck.pickers.cols32[i] = html_2_rgb_2_ui32(str);
     });
     app.deck.mode = Settings::Deck::EMode::Picker;
+}
+
+void on_deck_palette(HttpRequest& req)
+{
+    i32 i;
+    if (req.try_arg_i("pal", i)) app.deck.palette.idx = i;
+    app.deck.palette.isStillBlending = true;          // force reload palette
+    app.deck.mode = Settings::Deck::EMode::Palette;
 }
 
 //.....................................................................HEADER
@@ -121,4 +130,5 @@ void endpoints_init()
     asyncBackend_register_endpoint("/esp/deck/mirror", on_deck_mirror);
     asyncBackend_register_endpoint("/esp/deck/sliders", on_deck_sliders);
     asyncBackend_register_endpoint("/esp/deck/pickers", on_deck_pickers);
+    asyncBackend_register_endpoint("/esp/deck/palette", on_deck_palette);
 }

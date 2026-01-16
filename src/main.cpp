@@ -3,10 +3,8 @@
 #include <ArduinoOTA.h>
 #include "PrintHelper.h"
 
-#include "state.h"
 #include "utils.h"
-#include "addresleds.h"
-#include "addresledRnd.h"
+#include "leds.h"
 #include "palettes.h"
 
 #include "jsonWriter.h"
@@ -14,200 +12,189 @@
 #include "asyncBackend.h"
 #include "endpoints.h"
 
+#include "timeService.h"
+#include "perlin.h"
+
 
 
 #define VERSION "0.8.9"
-#define LED_DBALL_PIN   14          // GPIO14 data pin
-#define LED_DBALL_COUNT 12          // led ring of 6x2
-#define LED_TVCON_PIN   26
-#define LED_TVCON_COUNT 128         // led strip
+#define LED_LAMP_PIN   14          // GPIO14 data pin
+#define LED_LAMP_COUNT 12          // led ring of 6x2
+#define LED_DECK_PIN   26
+#define LED_DECK_COUNT 128         // led strip
 
 
 
-//.........................................ALLOC LEDS
-AddresLedsRnd<LED_TVCON_PIN, LED_TVCON_COUNT> ledsConsole;
-AddresLeds   <LED_DBALL_PIN, LED_DBALL_COUNT> ledsBlazar;
+//.................................................................................ALLOC-LEDS
 
-bool recalculateLUT;                // for gamma correction
-ui8  gammaLUT[256];                 // for gamma correction
+Leds<LED_DECK_PIN, LED_DECK_COUNT> ledsDeck;
+Leds<LED_LAMP_PIN, LED_LAMP_COUNT> ledsLamp;
 
+//.................................................................................GAMMA-CORR
 
+bool willRecalculateLUT;                // for gamma correction
+ui8  gammaLUT[256];                     // global gamma table
 
-//............................................................................FORWARD DECLARATION
+//.........................................................................FORWARD-DECLARATION
 
-void Loop_BlazarLamp();
-void Loop_TVConsole();
-void RecaluculateGammaLUT();
-
-ui8 SampleNoise(const CmpNoise& noise, ui8 value);
-CRGB FlickerColor(const CRGB col);
-
-
-//.......................................................................................STATE
-
-void InitState()
-{
-    oldapp.lamp.is_fliker = true;
-
-    oldapp.lamp.noiseBrt.ampl = 80;
-    oldapp.lamp.noiseBrt.timeScale = 1;
-
-    oldapp.lamp.noiseHue.ampl = 30;
-    oldapp.lamp.noiseHue.timeScale = 1;
-    oldapp.lamp.noiseHue.offset = 1000;
-}
-
-
-void InitPalettes()
-{
-    palette_init();
-    oldapp.console.palette.namesJson = palette_names_json();
-}
-
+void recaluculate_gamma_LUT();
+void loop_lamp();
+void loop_deck();
+CHSV flicker_color_hsv(Settings::Flicker flik, CHSV hsv);
 
 //.........................................................................................ESP
 
 void setup()
 {
-    // Starts Serial
+    // fancy header, also this starts Serial
     SPrint("\n\n--------------------[[ ESP32 \"Blazar\" Lamp ]]--------------------");
     SPrint(  "\n---------------------[[ + TV Console supp ]]----------------------");
     SPrint("                                                     Version %s\n", VERSION);
-
-    SPrint("!!! testing json writer...");
-    JsonWriter json;
-
-    Settings set;
-    set.emit_json(json);
-
-    SPrint("size is %d", json.get_size());
-    SPrint("data:\n%s", json.get_cstring());
-
 
     asyncBackend_init();
     endpoints_init();
     asyncBackend_start();
 
-
-    //xxxxxxxxxxxxxxxxxxxxxxxxxx RET
-    return;
-    //InitWiFiServer(201, AnimateWiFiStartup);      // ip adress 201 ; check with platformio.ini:upload_port
-    //InitHttpFrontend();
-    //InitBackend();
-    InitState();
-    InitPalettes();
-    // init OTA
-    ArduinoOTA.begin();
+    ArduinoOTA.begin();     // other-the-air update
     SPrint("OK: OTA ready\n");
+
     // init leds
-    ledsBlazar.SetColor(CRGB::Red);
-    ledsConsole.SetColor(CRGB::Blue);
-    FastLED.setBrightness(oldapp.brightness);
+    ledsLamp.SetColor(CRGB::Red);
+    ledsDeck.SetColor(CRGB::Blue);
+    FastLED.setBrightness(app.glob.luma);
     FastLED.show();
-    SPrint("OK: Leds inited \tBlazar %i | TVConsole %i\n", LED_DBALL_COUNT, LED_TVCON_COUNT);
+    SPrint("OK: Leds inited Blazar (%u leds) Deck (%u leds)\n", LED_LAMP_COUNT, LED_DECK_COUNT);
     // update LUT gamma correction
-    RecaluculateGammaLUT();
+    recaluculate_gamma_LUT();
 }
 
 void loop()
 {
     delay(1);
-    SPrint('.');
-    //SPrint("loop ms %d", millis());
-
-    delay(1000);
-    //xxxxxxxxxxxxxxxxxxxxxxxxxx RET
-    return;
-
-    //server.handleClient();
     ArduinoOTA.handle();
-    
-    FastLED.setBrightness(oldapp.brightness);
-    if (recalculateLUT) RecaluculateGammaLUT();
+    timeSrv.update();
 
-    Loop_BlazarLamp();
-    Loop_TVConsole();
+    FastLED.setBrightness(app.glob.luma);
+    if (willRecalculateLUT) recaluculate_gamma_LUT();
+
+    loop_lamp();
+    loop_deck();
 
     FastLED.show();
 }
 
-//......................................................................LED
+//.............................................................................................LOOPS
 
-void Loop_BlazarLamp()
+void loop_lamp()
 {
-    ledsBlazar.OnUpdate(oldapp.lamp.bright, 0, 0);  // force no skip and no anim idx
-    CRGB col;
-    col.setColorCode(oldapp.lamp.color32);
-    if (oldapp.lamp.is_fliker)
-        col = FlickerColor(col);
+    ledsLamp.bright = app.lamp.luma;
+    ledsLamp.anim.update();
 
-    ledsBlazar.SetColor(col);
-    oldapp.lamp.actualColor = rgb_2_ui32(col);
-}
-
-
-void Loop_TVConsole()
-{
-    ledsConsole.OnUpdate(oldapp.console.bright, oldapp.console.anim, oldapp.animSkip);
-    ledsConsole.setRandEnabled(oldapp.console.palette.irand);
-    CRGB rgb;
-
-    switch (oldapp.console.mode)
+    switch (app.lamp.mode)
     {
-        case TVConsole::Mode::HSV:
-            hsv2rgb( CHSV(oldapp.console.hsv.h, oldapp.console.hsv.s, oldapp.console.bright) , rgb);
-            ledsConsole.SetColor(rgb);
-            break;
-        
-        case TVConsole::Mode::MirrorLamp:
-            rgb.setColorCode(oldapp.lamp.actualColor);
-            ledsConsole.SetColor(rgb);
-            break;
+        case Settings::Lamp::EMode::Mood:       // 0
+        app.lamp.hsv32_target = app.lamp.mood.to_hsv32();
+        break;
 
-        case TVConsole::Mode::Palette:
-            // TODO: v~~~ optimize to not call every time
-            auto pal = palette_from_idx(oldapp.console.palette.idx);
-            ledsConsole.SetPaletteFX(pal, oldapp.console.blend);
-            break;
+        case Settings::Lamp::EMode::Sliders:    // 1
+        app.lamp.hsv32_target = app.lamp.sliders.to_hsv32();
+        break;
+
+        case Settings::Lamp::EMode::Picker:     // 2
+        app.lamp.hsv32_target = app.lamp.pickers.to_hsv32();
+        break;
     }
+
+    if (app.lamp.flik.isOn)
+    {
+        CHSV hsv = ui32_2_hsv(app.lamp.hsv32_target);
+        hsv = flicker_color_hsv(app.lamp.flik, hsv);
+        app.lamp.hsv32_actual = hsv_2_ui32(hsv);
+    }
+    else
+    {
+        app.lamp.hsv32_actual = app.lamp.hsv32_target;
+    }
+
+    ledsLamp.SetColor(ui32_2_hsv(app.lamp.hsv32_actual));
 }
 
+
+void loop_deck()
+{
+    ledsDeck.bright = app.deck.luma;
+    ledsDeck.anim.update();
+    ledsDeck.rand.isOn = app.deck.palette.isRandz;
+
+    switch (app.deck.mode)
+    {
+        case Settings::Deck::EMode::MirrorLamp:     // 0
+        // this contains lamp flicker, but more flicker can be added below
+        app.deck.hsv32_target = app.lamp.hsv32_actual;
+        break;
+
+        case Settings::Deck::EMode::Sliders:        // 1
+        app.deck.hsv32_target = app.deck.sliders.to_hsv32();
+        break;
+
+        case Settings::Deck::EMode::Picker:         // 2
+        app.deck.hsv32_target = app.deck.pickers.to_hsv32();
+        break;
+
+        case Settings::Deck::EMode::Palette: {      // 3
+        CRGBPalette16 pal = palette_from_idx(app.deck.palette.idx);
+        // display with FX
+        if (app.deck.palette.isStillBlending)
+            app.deck.palette.isStillBlending = ledsDeck.SetPaletteFX(pal);
+        return;     // for palette mode no flicker is available
+        }
+
+        default:
+        SPrint("ERR: Unexpected Deck mode: %i", app.deck.mode);
+        break;
+    }
+
+    if (app.deck.flik.isOn)
+    {
+        CHSV hsv = ui32_2_hsv(app.deck.hsv32_target);
+        hsv = flicker_color_hsv(app.deck.flik, hsv);
+        app.deck.hsv32_actual = hsv_2_ui32(hsv);
+    }
+    else
+    {
+        app.deck.hsv32_actual = app.deck.hsv32_target;
+    }
+
+    ledsDeck.SetColor(ui32_2_hsv(app.deck.hsv32_actual));
+}
 
 //.........................................................................FX
 
-void RecaluculateGammaLUT()
+CHSV flicker_color_hsv(Settings::Flicker flik, CHSV hsv)
 {
-    recalculateLUT = false;
-    updateGammaLutTable256(gammaLUT, oldapp.gamma);
-    ledsConsole.SetGammaLutTable(gammaLUT);
-    ledsBlazar.SetGammaLutTable(gammaLUT);
-}
-
-ui8 SampleNoise(const CmpNoise& noise, ui8 value, bool isWrap)
-{
-    if (noise.ampl <= 0) return value;
-    float f = inoise8((millis() * noise.timeScale) + noise.offset) / 255.0;   // [ 0, 1]
-    f = (f - 0.5) * 2.0;                                                      // [-1, 1]
-    int result = value + noise.ampl * f;
-    return isWrap ? (ui8)result : constrain(result, 0, 255);
-}
-
-CRGB FlickerColor(CRGB rgb)
-{
-    CHSV hsv;
-    rgb2hsv(rgb, hsv);
-    ui8 h = SampleNoise(oldapp.lamp.noiseHue, hsv.h, true);
-    ui8 v = SampleNoise(oldapp.lamp.noiseBrt, hsv.v, false);
-    hsv2rgb(CHSV(h, hsv.s, v), rgb);
-    return rgb;
+    // affect hue
+    if (flik.hue.spd > 0 && flik.hue.ampl > 0)
+    {
+        Perlin noise(flik.hue.spd, flik.hue.ampl);
+        hsv.hue += noise.compute(Perlin::EMode::Ballance);
+    }
+    // affect value
+    if (flik.val.spd > 0 && flik.val.ampl > 0)
+    {
+        Perlin noise(flik.val.spd, flik.val.ampl);
+        hsv.val += noise.compute(Perlin::EMode::Substractive);
+    }
+    return hsv;
 }
 
 
-
-
-
-
-
+void recaluculate_gamma_LUT()
+{
+    update_gammaLUT_table256(gammaLUT, app.glob.gamma);
+    ledsDeck.SetGammaLutTable(gammaLUT);
+    ledsLamp.SetGammaLutTable(gammaLUT);
+    willRecalculateLUT = false;
+}
 
 
 
@@ -227,14 +214,14 @@ CRGB FlickerColor(CRGB rgb)
 //         idx = ++idx % NUM_COL;
 //     }
 
-//     fadeToBlackBy(leds, LED_DBALL_COUNT, runningFade);
+//     fadeToBlackBy(leds, LED_LAMP_COUNT, runningFade);
 //     FastLED.show();
 //     CRGB bbb;
 // }
 
 // void ActionFixedColor()
 // {
-//     for (ui8 i = 0; i < LED_DBALL_COUNT; ++i)
+//     for (ui8 i = 0; i < LED_LAMP_COUNT; ++i)
 //         leds[i] = active;
 //     FastLED.show();
 // }
@@ -252,7 +239,7 @@ CRGB FlickerColor(CRGB rgb)
 //     }
 
 //     if (randomFade == 1)
-//         fadeToBlackBy(leds, LED_DBALL_COUNT, runningFade);
+//         fadeToBlackBy(leds, LED_LAMP_COUNT, runningFade);
 //     FastLED.show();
 // }
 

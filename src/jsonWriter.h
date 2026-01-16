@@ -7,13 +7,15 @@ class JsonWriter
     public:
 
     void end();         // universal end, finishes the nested object, array list or root
-    void begin_root();  // begin the json root object (has no name part)
+    void root();        // begin the json root object (has no name part)
     
-    void field_obj (const char* name);              // starts a json object
-    void field_arr (const char* name);              // starts a json array
-    void field_i   (const char* name, i32  val);    // append a signed int
-    void field_ui  (const char* name, ui32 val);    // append an unsigned int
-    void field_b   (const char* name, bool val);    // append a boolean (maybe make _byte and _char as it takes same byte)
+    void field_obj (const char* name);                  // starts a json object
+    void field_arr (const char* name);                  // starts a json array
+    void field_i   (const char* name, i32  val);        // append a signed int
+    void field_ui  (const char* name, ui32 val);        // append an unsigned int
+    void field_f   (const char* name, float val);       // append a float number
+    void field_b   (const char* name, bool val);        // append a boolean (maybe make _byte and _char as it takes same byte)
+    void field_s   (const char* name, const char* val); // append a string
 
     const char* get_cstring() const;    // asserts all good, returns string's pointer
     ui16 get_size() const;              // current json char count, excluding \0

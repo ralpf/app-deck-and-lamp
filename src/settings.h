@@ -13,27 +13,31 @@ struct Settings
 
     struct Wave
     {
-        ui8 spd  = 0;   // speed
-        ui8 ampl = 0;   // amplitude
+        float spd  = 0;   // speed
+        ui8   ampl = 0;   // amplitude
     };
 
     struct Flicker
     {
         bool isOn = false;
         Wave hue;
-        Wave sat;
+        Wave val;
     };
 
     struct Sliders
     {
         ui8 hue = 200;
         ui8 sat = 255;
+
+        ui32 to_hsv32();
     };
 
     struct Pickers
     {
         static constexpr ui8 max = 8;
         ui32 cols32[max] = {0xFF00FF, 0};
+
+        ui32 to_hsv32();
     };
 
     //.....................................................MODE-TYPE
@@ -41,6 +45,7 @@ struct Settings
     struct Global
     {
         ui8 luma = 200;
+        float gamma = 1;
     };
 
     //.....................................................MODE-TYPE
@@ -53,7 +58,9 @@ struct Settings
         // inner type
         struct Mood
         {
-            ui32 col32 = 0xFFD700;  // random gold color
+            ui32 rgb32 = 0xFFD700;  // random gold color
+
+            ui32 to_hsv32();
         };
 
         // top level storage
@@ -67,12 +74,12 @@ struct Settings
         Sliders sliders;
         Pickers pickers;
 
-        // not serialized to json
-        ui32 col32 = 0;                                 // actual color
+        ui32 hsv32_target = 0;   // NO-EMIT-JSON             // target HSV, w/o effects
+        ui32 hsv32_actual = 0;   // NO-EMIT-JSON             // actual HSV, with all aplied effects
     };
-    
+
     //.....................................................MODE-TYPE
-    
+
     struct Deck
     {
         // inner enum
@@ -81,7 +88,9 @@ struct Settings
         // inner type
         struct Palette
         {
-            ui8 idx = 0;
+            bool isStillBlending;  // NO-EMIT-JSON     // this is a runtime var
+            bool isRandz = false;
+            ui8  idx = 0;
         };
 
         // top level storage
@@ -95,10 +104,12 @@ struct Settings
         Pickers pickers;
         Palette palette;
 
+        ui32 hsv32_target = 0;   // NO-EMIT-JSON             // target HSV, w/o effects
+        ui32 hsv32_actual = 0;   // NO-EMIT-JSON             // actual HSV, with all aplied effects
     };
 
     //........................................................STORAGE
-    
+
     Global glob;
     Lamp   lamp;
     Deck   deck;

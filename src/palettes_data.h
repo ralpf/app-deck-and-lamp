@@ -2,9 +2,6 @@
 
 #include "palettes.h"
 
-#define PALETE_COUNT 7  // don't forget to update
-
-
 //=============================== PALETTE DATA =================================
 
 DEFINE_GRADIENT_PALETTE(palData_Spectrum)
