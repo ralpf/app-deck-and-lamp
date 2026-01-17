@@ -12,7 +12,7 @@
   #error "IP_ADDRESS_4 symbol not #defined !! It sets the last byte of 192.168.100.* "
 #endif
 
-//...........................................................................STATIC
+//............................................................................................STATIC
 
 // think how to better store credentials
 static const char* ssid = "StarNet - munteanu.v84";
@@ -22,6 +22,7 @@ static const char* password = "48575443A95B41AA";
 
 // the fancy async web server
 static AsyncWebServer server(80);
+static AsyncWebSocket wsocket("/ws/log");
 
 // some sanity check
 static bool isInited;
@@ -30,7 +31,35 @@ static bool isStarted;
 // some fun
 static ui32 count_req;
 
-//........................................................................LOCAL-FUNC
+//.................................................................................WEBSOCKET-HANLDER
+
+void on_websocket_event(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t data_len)
+{
+    switch (type)
+    {
+        case WS_EVT_CONNECT:
+        Serial.printf("[WS] client %u connected\n", client->id());
+        break;
+        case WS_EVT_DISCONNECT:
+        Serial.printf("[WS] client %u disconnected\n", client->id());
+        break;
+        // other available events, just for info
+        case WS_EVT_DATA:
+        case WS_EVT_PONG:
+        case WS_EVT_ERROR:
+        default:
+        break;
+    }
+}
+
+//..................................................................................WEBSOCKET-HEADER
+
+void websocket_log(const char* message)
+{
+    wsocket.textAll(message);
+}
+
+//........................................................................................LOCAL-FUNC
 
 void init_wifi_server()
 {
@@ -60,6 +89,13 @@ void init_frontend()
 }
 
 
+void init_websocket()
+{
+    server.addHandler(&wsocket);
+    wsocket.onEvent(on_websocket_event);
+}
+
+
 bool validate_endpoint(const char* endpoint)
 {
     if (endpoint == nullptr) return false;
@@ -67,7 +103,7 @@ bool validate_endpoint(const char* endpoint)
     return true;
 }
 
-//.........................................................................ENDPOINTS
+//.........................................................................................ENDPOINTS
 
 void endpoint_test_handler(HttpRequest& request)
 {
@@ -83,9 +119,45 @@ void endpoint_root_handler(HttpRequest& request)
     request.raw()->send(SPIFFS, "/index.html", "text/html");
 }
 
-//........................................................................HEADER-FUNC
+//.........................................................................................NOT-FOUND
 
-void asyncBackend_register_endpoint(HttpRequest::Method type, const char* endpoint, HttpRequestHandler handlerFunc)
+void register_endpoint_not_found()
+{
+    server.onNotFound([](AsyncWebServerRequest* req) {
+        HttpRequest r(req);
+        r.log_to_serial(404, ++count_req);
+        r.send_notFound();
+    });
+}
+
+//............................................................................................HEADER
+
+void asyncBackend_init()
+{
+    init_wifi_server();
+    init_frontend();
+    init_websocket();
+    isInited = true;
+}
+
+
+void asyncBackend_start()
+{
+    ASSERT(isInited, "ERR: init server before starting it");
+    ASSERT(!isStarted, "ERR: server was already started");
+
+    // endpoints available in all projects
+    asyncBackend_register_endpoint("/", endpoint_root_handler);
+    asyncBackend_register_endpoint("/test", endpoint_test_handler);
+    // invalid endpoints
+    register_endpoint_not_found();
+
+    server.begin();
+    isStarted = true;
+}
+
+
+void asyncBackend_register_endpoint(const char* endpoint, HttpRequestHandler handlerFunc, HttpRequest::Method type)
 {
     // just resolve method type block
     const char* methodName = "";
@@ -117,46 +189,4 @@ void asyncBackend_register_endpoint(HttpRequest::Method type, const char* endpoi
                 r.send_ok("Ok");
         }
     );
-}
-
-
-void asyncBackend_register_endpoint(const char* endpoint, HttpRequestHandler handlerFunc)
-{
-    asyncBackend_register_endpoint(HttpRequest::Method::Get, endpoint, handlerFunc);
-}
-
-//......................................................................NOT-FOUND
-
-void register_endpoint_not_found()
-{
-    server.onNotFound([](AsyncWebServerRequest* req) {
-        HttpRequest r(req);
-        r.log_to_serial(404, ++count_req);
-        r.send_notFound();
-    });
-}
-
-//.........................................................................HEADER
-
-void asyncBackend_init()
-{
-    init_wifi_server();
-    init_frontend();
-    isInited = true;
-}
-
-
-void asyncBackend_start()
-{
-    ASSERT(isInited, "ERR: init server before starting it");
-    ASSERT(!isStarted, "ERR: server was already started");
-
-    // endpoints available in all projects
-    asyncBackend_register_endpoint(HttpRequest::Method::Get, "/", endpoint_root_handler);
-    asyncBackend_register_endpoint(HttpRequest::Method::Get, "/test", endpoint_test_handler);
-    // invalid endpoints
-    register_endpoint_not_found();
-
-    server.begin();
-    isStarted = true;
 }
