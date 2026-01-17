@@ -9,7 +9,7 @@
 #include <ESPAsyncWebServer.h>
 
 #ifndef IP_ADDRESS_4
-  #error "IP_ADDRESS_4 not defined. It sets the last byte of 192.168.100.* "
+  #error "IP_ADDRESS_4 symbol not #defined !! It sets the last byte of 192.168.100.* "
 #endif
 
 //...........................................................................STATIC
@@ -26,6 +26,9 @@ static AsyncWebServer server(80);
 // some sanity check
 static bool isInited;
 static bool isStarted;
+
+// some fun
+static ui32 count_req;
 
 //........................................................................LOCAL-FUNC
 
@@ -84,7 +87,7 @@ void endpoint_root_handler(HttpRequest& request)
 
 void asyncBackend_register_endpoint(HttpRequest::Method type, const char* endpoint, HttpRequestHandler handlerFunc)
 {
-    // just resolve method type
+    // just resolve method type block
     const char* methodName = "";
     WebRequestMethod method = HTTP_ANY;
     switch (type)
@@ -99,16 +102,16 @@ void asyncBackend_register_endpoint(HttpRequest::Method type, const char* endpoi
         break;
         default: ASSERT(false, "unexpected method type");
     }
-    // sanity check
+    // sanity check and report
     ASSERT(isInited, "ERR: init first before attaching endpoints");
     ASSERT(validate_endpoint(endpoint), "ERR: invalid endpoint");
     ASSERT(!isStarted, "ERR: can't attach more endpoints after server was started");
     SPrint("[AsyncBackend]: new endpoint -> %s: '%s'", methodName, endpoint);
-    // do register
+    // do register function
     server.on(endpoint, method,
         [handlerFunc](AsyncWebServerRequest* req) {     // lambda
             HttpRequest r(req);                         // wrapper class
-            r.log_to_serial(200);                       // write using Serial. Hope to minimize race condition in threads
+            r.log_to_serial(200, ++count_req);          // write using Serial from arduino
             handlerFunc(r);                             // invoke hanlder with wrapper as arg
             if (r.wasResponceSent() == false)           // autoresponce on forget to respond
                 r.send_ok("Ok");
@@ -128,7 +131,7 @@ void register_endpoint_not_found()
 {
     server.onNotFound([](AsyncWebServerRequest* req) {
         HttpRequest r(req);
-        r.log_to_serial(404);
+        r.log_to_serial(404, ++count_req);
         r.send_notFound();
     });
 }

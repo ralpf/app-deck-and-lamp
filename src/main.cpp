@@ -17,7 +17,7 @@
 
 
 
-#define VERSION "0.8.9"
+#define VERSION "0.9.0"
 #define LED_LAMP_PIN   14          // GPIO14 data pin
 #define LED_LAMP_COUNT 12          // led ring of 6x2
 #define LED_DECK_PIN   26
