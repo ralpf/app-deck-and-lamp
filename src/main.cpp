@@ -1,19 +1,19 @@
+#include <uniPrinter.h>
+#include <colorUtils.h>
+#include <jsonWriter.h>
+#include <asyncBackend.h>
+#include <timeService.h>
+
+#include "leds.h"
+#include "palettes.h"
+#include "perlin.h"
+
+#include "settings.h"
+#include "endpoints.h"
 
 #include <FastLED.h>
 #include <ArduinoOTA.h>
-#include "PrintHelper.h"
 
-#include "utils.h"
-#include "leds.h"
-#include "palettes.h"
-
-#include "jsonWriter.h"
-#include "settings.h"
-#include "asyncBackend.h"
-#include "endpoints.h"
-
-#include "timeService.h"
-#include "perlin.h"
 
 
 

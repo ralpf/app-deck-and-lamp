@@ -3,8 +3,8 @@
 #include <math.h>       // for fmodf()
 #include <FastLED.h>
 #include <Types.h>
-#include "utils.h"
-#include "timeService.h"
+#include <colorUtils.h>
+#include <timeService.h>
 
 
 

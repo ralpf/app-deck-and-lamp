@@ -1,6 +1,6 @@
 #include "palettes.h"
 #include "palettes_data.h"
-#include "jsonWriter.h"
+#include <jsonWriter.h>
 
 
 // NOTE: decided to ditch unordered map, for simplicity

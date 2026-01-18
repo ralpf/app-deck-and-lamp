@@ -2,8 +2,9 @@
 
 
 #include <Types.h>
+#include <timeService.h>
+
 #include <FastLED.h>
-#include "timeService.h"
 
 
 // perlin noise wrappers based on FastLED inoise

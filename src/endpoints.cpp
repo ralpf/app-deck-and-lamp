@@ -1,8 +1,9 @@
 #include "endpoints.h"
 #include "settings.h"
-#include "asyncBackend.h"
-#include "httpRequest.h"
-#include "utils.h"
+
+#include <asyncBackend.h>
+#include <httpRequest.h>
+#include <colorUtils.h>
 
 
 //.................................................................................SETTINGS HANDLERS

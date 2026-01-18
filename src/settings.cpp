@@ -1,6 +1,7 @@
 #include "settings.h"
-#include "jsonWriter.h"
-#include "utils.h"
+
+#include <jsonWriter.h>
+#include <colorUtils.h>
 
 #include <FastLED.h>
 
