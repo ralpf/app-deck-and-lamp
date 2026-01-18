@@ -2,6 +2,7 @@
 #include <colorUtils.h>
 #include <jsonWriter.h>
 #include <asyncBackend.h>
+#include <asyncWebsocket.h>
 #include <timeService.h>
 
 #include "leds.h"
@@ -72,6 +73,7 @@ void loop()
     delay(1);
     ArduinoOTA.handle();
     timeSrv.update();
+    websocket_maintain();
 
     FastLED.setBrightness(app.glob.luma);
     if (app.glob.update_gamme) recaluculate_gamma_LUT();
