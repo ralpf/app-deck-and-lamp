@@ -14,6 +14,7 @@
 
 #include <FastLED.h>
 #include <ArduinoOTA.h>
+#include "endpoints.h"
 
 
 

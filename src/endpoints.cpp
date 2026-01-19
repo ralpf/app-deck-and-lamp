@@ -6,10 +6,13 @@
 #include <colorUtils.h>
 
 
+constexpr ui8 kPrintDebug = 1;      // set to 1 for debug print. Shoud stript branch by compiler on 0
+
 //.................................................................................SETTINGS HANDLERS
 
-void on_global(HttpRequest& req)
+void on_global(HttpRequest& req, const char* ep)
 {
+    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
     i32 i; float f;
     if (req.try_arg_i("luma", i))  app.glob.luma = i;
     if (req.try_arg_f("gamma", f))
@@ -22,15 +25,17 @@ void on_global(HttpRequest& req)
 //.....................................................................................LAMP HANDLERS
 
 
-void on_lamp(HttpRequest& req)
+void on_lamp(HttpRequest& req, const char* ep)
 {
+    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
     i32 i;
     if (req.try_arg_i("mode", i)) app.lamp.mode = (Settings::Lamp::EMode)i;
     if (req.try_arg_i("luma", i)) app.lamp.luma = i;
 }
 
-void on_lamp_flicker(HttpRequest& req)
+void on_lamp_flicker(HttpRequest& req, const char* ep)
 {
+    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
     i32 i; bool b; float f;
     if (req.try_arg_b("on",    b)) app.lamp.flik.isOn = b;
     if (req.try_arg_f("hSpd",  f)) app.lamp.flik.hue.spd = f;
@@ -39,24 +44,28 @@ void on_lamp_flicker(HttpRequest& req)
     if (req.try_arg_i("lAmpl", i)) app.lamp.flik.val.ampl = i;
 }
 
-void on_lamp_mood(HttpRequest& req)
+void on_lamp_mood(HttpRequest& req, const char* ep)
 {
+    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
     const ui8 SZ = 16;
     char buff[SZ];
     if (req.try_arg_s("col", buff, SZ)) app.lamp.mood.rgb32 = html_2_rgb_2_ui32(buff);
     app.lamp.mode = Settings::Lamp::EMode::Mood;
 }
 
-void on_lamp_sliders(HttpRequest& req)
+void on_lamp_hsv(HttpRequest& req, const char* ep)
 {
+    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
     i32 i;
     if (req.try_arg_i("hue", i)) app.lamp.sliders.hue = i;
     if (req.try_arg_i("sat", i)) app.lamp.sliders.sat = i;
     app.lamp.mode = Settings::Lamp::EMode::Sliders;
 }
 
-void on_lamp_pickers(HttpRequest& req)
+
+void on_lamp_picker(HttpRequest& req, const char* ep)
 {
+    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
     for (ui8 i = 0; i < Settings::Pickers::max; ++i) app.lamp.pickers.cols32[i] = 0;    // reset all
     // non-capturing lambda only
     req.try_many("col", [](ui8 i, const char* str) {
@@ -68,15 +77,17 @@ void on_lamp_pickers(HttpRequest& req)
 
 //.....................................................................................DECK HANDLERS
 
-void on_deck(HttpRequest& req)
+void on_deck(HttpRequest& req, const char* ep)
 {
+    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
     i32 i;
     if (req.try_arg_i("mode", i)) app.deck.mode = (Settings::Deck::EMode)i;
     if (req.try_arg_i("luma", i)) app.deck.luma = i;
 }
 
-void on_deck_flicker(HttpRequest& req)
+void on_deck_flicker(HttpRequest& req, const char* ep)
 {
+    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
     i32 i; bool b; float f;
     if (req.try_arg_b("on",    b)) app.deck.flik.isOn = b;
     if (req.try_arg_f("hSpd",  f)) app.deck.flik.hue.spd = f;
@@ -85,21 +96,24 @@ void on_deck_flicker(HttpRequest& req)
     if (req.try_arg_i("lAmpl", i)) app.deck.flik.val.ampl = i;
 }
 
-void on_deck_mirror(HttpRequest& req)
+void on_deck_mirror(HttpRequest& req, const char* ep)
 {
+    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
     app.deck.mode = Settings::Deck::EMode::MirrorLamp;
 }
 
-void on_deck_sliders(HttpRequest& req)
+void on_deck_hsv(HttpRequest& req, const char* ep)
 {
+    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
     i32 i;
     if (req.try_arg_i("hue", i)) app.deck.sliders.hue = i;
     if (req.try_arg_i("sat", i)) app.deck.sliders.sat = i;
     app.deck.mode = Settings::Deck::EMode::Sliders;
 }
 
-void on_deck_pickers(HttpRequest& req)
+void on_deck_picker(HttpRequest& req, const char* ep)
 {
+    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
     for (ui8 i = 0; i < Settings::Pickers::max; ++i) app.deck.pickers.cols32[i] = 0;    // reset all
     // non-capturing lambda only
     req.try_many("col", [](ui8 i, const char* str) {
@@ -109,8 +123,9 @@ void on_deck_pickers(HttpRequest& req)
     app.deck.mode = Settings::Deck::EMode::Picker;
 }
 
-void on_deck_palette(HttpRequest& req)
+void on_deck_palette(HttpRequest& req, const char* ep)
 {
+    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
     i32 i;
     if (req.try_arg_i("pal", i)) app.deck.palette.idx = i;
     app.deck.palette.isStillBlending = true;          // force reload palette
@@ -119,21 +134,23 @@ void on_deck_palette(HttpRequest& req)
 
 //............................................................................................HEADER
 
+
 void endpoints_init()
 {
+    // NOTE: the order is important for matching!
     // glob
     asyncBackend_register_endpoint("/esp/glob", on_global);
     // lamp
-    asyncBackend_register_endpoint("/esp/lamp", on_lamp);
-    asyncBackend_register_endpoint("/esp/lamp/flik", on_lamp_flicker);
+    asyncBackend_register_endpoint("/esp/lamp/picker", on_lamp_picker);
+    asyncBackend_register_endpoint("/esp/lamp/hsv", on_lamp_hsv);
     asyncBackend_register_endpoint("/esp/lamp/mood", on_lamp_mood);
-    asyncBackend_register_endpoint("/esp/lamp/sliders", on_lamp_sliders);
-    asyncBackend_register_endpoint("/esp/lamp/pickers", on_lamp_pickers);
+    asyncBackend_register_endpoint("/esp/lamp/flik", on_lamp_flicker);
+    asyncBackend_register_endpoint("/esp/lamp", on_lamp);
     // deck
-    asyncBackend_register_endpoint("/esp/deck", on_deck);
     asyncBackend_register_endpoint("/esp/deck/flik", on_deck_flicker);
     asyncBackend_register_endpoint("/esp/deck/mirror", on_deck_mirror);
-    asyncBackend_register_endpoint("/esp/deck/sliders", on_deck_sliders);
-    asyncBackend_register_endpoint("/esp/deck/pickers", on_deck_pickers);
+    asyncBackend_register_endpoint("/esp/deck/hsv", on_deck_hsv);
+    asyncBackend_register_endpoint("/esp/deck/picker", on_deck_picker);
     asyncBackend_register_endpoint("/esp/deck/palette", on_deck_palette);
+    asyncBackend_register_endpoint("/esp/deck", on_deck);
 }
