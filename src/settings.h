@@ -48,7 +48,7 @@ struct Settings
         ui8 luma = 200;
         float gamma = 1;
 
-        bool update_gamme = false;     // NO-EMIT-JSON
+        bool update_gamma = false;     // NO-EMIT-JSON
     };
 
     //.....................................................MODE-TYPE
@@ -117,7 +117,7 @@ struct Settings
     Lamp   lamp;
     Deck   deck;
 
-    bool debugFlag; // this will be removed
+    bool flagPrintJson;          // NO-EMIT-JSON            // force print app state json
 
     //........................................................TO-JSON
 

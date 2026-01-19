@@ -19,7 +19,7 @@ void on_global(HttpRequest& req, const char* ep)
     if (req.try_arg_f("gamma", f))
     {
         app.glob.gamma = f;
-        app.glob.update_gamme = true;
+        app.glob.update_gamma = true;
     }
 }
 
@@ -50,7 +50,7 @@ void on_lamp_mood(HttpRequest& req, const char* ep)
     if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
     const ui8 SZ = 16;
     char buff[SZ];
-    if (req.try_arg_s("col", buff, SZ)) { app.lamp.mood.rgb32 = html_2_rgb_2_ui32(buff); SPrint("Hit %d", app.lamp.mood.rgb32); }
+    if (req.try_arg_s("col", buff, SZ)) app.lamp.mood.rgb32 = html_2_rgb_2_ui32(buff);
     app.lamp.mode = Settings::Lamp::EMode::Mood;
 }
 
@@ -137,7 +137,7 @@ void on_deck_palette(HttpRequest& req, const char* ep)
 
 void on_debug(HttpRequest& req, const char* ep)
 {
-    app.debugFlag = true;
+    app.flagPrintJson = true;
 }
 
 //............................................................................................HEADER

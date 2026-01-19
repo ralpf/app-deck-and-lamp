@@ -42,6 +42,7 @@ JsonWriter json;
 void recaluculate_gamma_LUT();
 void loop_lamp();
 void loop_deck();
+void loop_debug();
 CHSV flicker_color_hsv(Settings::Flicker flik, CHSV hsv);
 
 //...............................................................................................ESP
@@ -67,16 +68,11 @@ void setup()
     FastLED.show();
     SPrint("OK: Leds inited Blazar (%u leds) Deck (%u leds)\n", LED_LAMP_COUNT, LED_DECK_COUNT);
     // update LUT gamma correction
-    recaluculate_gamma_LUT();
+    // recaluculate_gamma_LUT();
 }
 
 void loop()
 {
-    if (app.debugFlag) {
-        app.debugFlag = false;
-        app.emit_json(json);
-        SPrint("%s", json.get_cstring());
-    }
 
     delay(1);
     ArduinoOTA.handle();
@@ -84,15 +80,27 @@ void loop()
     websocket_maintain();
 
     FastLED.setBrightness(app.glob.luma);
-    if (app.glob.update_gamme) recaluculate_gamma_LUT();
+    if (app.glob.update_gamma) recaluculate_gamma_LUT();
 
     loop_lamp();
     loop_deck();
+    loop_debug();
 
     FastLED.show();
 }
 
 //.............................................................................................LOOPS
+
+void loop_debug()
+{
+    if (app.flagPrintJson)
+    {
+        app.flagPrintJson = false;
+        app.emit_json(json);
+        SPrint("%s", json.get_cstring());
+    }
+}
+
 
 void loop_lamp()
 {
@@ -199,10 +207,11 @@ CHSV flicker_color_hsv(Settings::Flicker flik, CHSV hsv)
 
 void recaluculate_gamma_LUT()
 {
+    SPrint("[GAMMA] is set to: %f", app.glob.gamma);
     update_gammaLUT_table256(gammaLUT, app.glob.gamma);
     ledsDeck.SetGammaLutTable(gammaLUT);
     ledsLamp.SetGammaLutTable(gammaLUT);
-    app.glob.update_gamme = false;
+    app.glob.update_gamma = false;
 }
 
 

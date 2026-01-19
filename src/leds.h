@@ -106,7 +106,7 @@ class Leds
     {
         ui8 luma = bright;
         idx = constrain(idx, 0, COUNT-1);
-        if (rand.isOn) idx = rand.Remap(idx);
+        //if (rand.isOn) idx = rand.Remap(idx);
 
         //              can add more filters or corrections
         if (gammaLUT != nullptr)        // gamma correction
