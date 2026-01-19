@@ -34,7 +34,8 @@ Leds<LED_LAMP_PIN, LED_LAMP_COUNT> ledsLamp;
 
 //........................................................................................GAMMA-CORR
 
-ui8  gammaLUT[256];                                                     // global gamma table
+ui8  gammaLUT[256];                // global gamma table
+JsonWriter json;
 
 //...............................................................................FORWARD-DECLARATION
 
@@ -71,6 +72,12 @@ void setup()
 
 void loop()
 {
+    if (app.debugFlag) {
+        app.debugFlag = false;
+        app.emit_json(json);
+        SPrint("%s", json.get_cstring());
+    }
+
     delay(1);
     ArduinoOTA.handle();
     timeSrv.update();

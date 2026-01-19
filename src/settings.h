@@ -117,6 +117,8 @@ struct Settings
     Lamp   lamp;
     Deck   deck;
 
+    bool debugFlag; // this will be removed
+
     //........................................................TO-JSON
 
     void emit_json(JsonWriter& json);

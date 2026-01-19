@@ -4,15 +4,16 @@
 #include <asyncBackend.h>
 #include <httpRequest.h>
 #include <colorUtils.h>
+#include <uniPrinter.h>
 
 
-constexpr ui8 kPrintDebug = 1;      // set to 1 for debug print. Shoud stript branch by compiler on 0
+constexpr ui8 kPrintDebug = 0;     // set to 1 for debug print. Shoud stript branch by compiler on 0
 
 //.................................................................................SETTINGS HANDLERS
 
 void on_global(HttpRequest& req, const char* ep)
 {
-    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
     i32 i; float f;
     if (req.try_arg_i("luma", i))  app.glob.luma = i;
     if (req.try_arg_f("gamma", f))
@@ -27,7 +28,7 @@ void on_global(HttpRequest& req, const char* ep)
 
 void on_lamp(HttpRequest& req, const char* ep)
 {
-    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
     i32 i;
     if (req.try_arg_i("mode", i)) app.lamp.mode = (Settings::Lamp::EMode)i;
     if (req.try_arg_i("luma", i)) app.lamp.luma = i;
@@ -35,7 +36,7 @@ void on_lamp(HttpRequest& req, const char* ep)
 
 void on_lamp_flicker(HttpRequest& req, const char* ep)
 {
-    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
     i32 i; bool b; float f;
     if (req.try_arg_b("on",    b)) app.lamp.flik.isOn = b;
     if (req.try_arg_f("hSpd",  f)) app.lamp.flik.hue.spd = f;
@@ -46,16 +47,16 @@ void on_lamp_flicker(HttpRequest& req, const char* ep)
 
 void on_lamp_mood(HttpRequest& req, const char* ep)
 {
-    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
     const ui8 SZ = 16;
     char buff[SZ];
-    if (req.try_arg_s("col", buff, SZ)) app.lamp.mood.rgb32 = html_2_rgb_2_ui32(buff);
+    if (req.try_arg_s("col", buff, SZ)) { app.lamp.mood.rgb32 = html_2_rgb_2_ui32(buff); SPrint("Hit %d", app.lamp.mood.rgb32); }
     app.lamp.mode = Settings::Lamp::EMode::Mood;
 }
 
 void on_lamp_hsv(HttpRequest& req, const char* ep)
 {
-    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
     i32 i;
     if (req.try_arg_i("hue", i)) app.lamp.sliders.hue = i;
     if (req.try_arg_i("sat", i)) app.lamp.sliders.sat = i;
@@ -65,7 +66,7 @@ void on_lamp_hsv(HttpRequest& req, const char* ep)
 
 void on_lamp_picker(HttpRequest& req, const char* ep)
 {
-    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
     for (ui8 i = 0; i < Settings::Pickers::max; ++i) app.lamp.pickers.cols32[i] = 0;    // reset all
     // non-capturing lambda only
     req.try_many("col", [](ui8 i, const char* str) {
@@ -79,7 +80,7 @@ void on_lamp_picker(HttpRequest& req, const char* ep)
 
 void on_deck(HttpRequest& req, const char* ep)
 {
-    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
     i32 i;
     if (req.try_arg_i("mode", i)) app.deck.mode = (Settings::Deck::EMode)i;
     if (req.try_arg_i("luma", i)) app.deck.luma = i;
@@ -87,7 +88,7 @@ void on_deck(HttpRequest& req, const char* ep)
 
 void on_deck_flicker(HttpRequest& req, const char* ep)
 {
-    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
     i32 i; bool b; float f;
     if (req.try_arg_b("on",    b)) app.deck.flik.isOn = b;
     if (req.try_arg_f("hSpd",  f)) app.deck.flik.hue.spd = f;
@@ -98,13 +99,13 @@ void on_deck_flicker(HttpRequest& req, const char* ep)
 
 void on_deck_mirror(HttpRequest& req, const char* ep)
 {
-    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
     app.deck.mode = Settings::Deck::EMode::MirrorLamp;
 }
 
 void on_deck_hsv(HttpRequest& req, const char* ep)
 {
-    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
     i32 i;
     if (req.try_arg_i("hue", i)) app.deck.sliders.hue = i;
     if (req.try_arg_i("sat", i)) app.deck.sliders.sat = i;
@@ -113,7 +114,7 @@ void on_deck_hsv(HttpRequest& req, const char* ep)
 
 void on_deck_picker(HttpRequest& req, const char* ep)
 {
-    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
     for (ui8 i = 0; i < Settings::Pickers::max; ++i) app.deck.pickers.cols32[i] = 0;    // reset all
     // non-capturing lambda only
     req.try_many("col", [](ui8 i, const char* str) {
@@ -125,11 +126,18 @@ void on_deck_picker(HttpRequest& req, const char* ep)
 
 void on_deck_palette(HttpRequest& req, const char* ep)
 {
-    if (kPrintDebug) Serial.printf("ENDPOINT: %s", ep);
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
     i32 i;
     if (req.try_arg_i("pal", i)) app.deck.palette.idx = i;
     app.deck.palette.isStillBlending = true;          // force reload palette
     app.deck.mode = Settings::Deck::EMode::Palette;
+}
+
+//.....................................................................................DEBUG-HANDLER
+
+void on_debug(HttpRequest& req, const char* ep)
+{
+    app.debugFlag = true;
 }
 
 //............................................................................................HEADER
@@ -153,4 +161,7 @@ void endpoints_init()
     asyncBackend_register_endpoint("/esp/deck/picker", on_deck_picker);
     asyncBackend_register_endpoint("/esp/deck/palette", on_deck_palette);
     asyncBackend_register_endpoint("/esp/deck", on_deck);
+    // debug
+    asyncBackend_register_endpoint("/esp/debug", on_debug);
+
 }
