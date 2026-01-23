@@ -113,7 +113,7 @@ ui32 Settings::Pickers::to_hsv32()
         nblend(acum, CRGB(cols32[i]), (ui8)(255 / ++count));    // mix proportionally
     }
 
-    CHSV hsv = rgb_2_hsv_fast(acum);
+    CHSV hsv = rgb_2_hsv_slow(acum);
     return hsv_2_ui32(hsv);
 }
 
@@ -127,7 +127,7 @@ ui32 Settings::Sliders::to_hsv32()
 ui32 Settings::Lamp::Mood::to_hsv32()
 {
     CRGB rgb = ui32_2_rgb(rgb32);
-    CHSV hsv = rgb_2_hsv_fast(rgb);
+    CHSV hsv = rgb_2_hsv_slow(rgb);
     return hsv_2_ui32(hsv);
 }
 
