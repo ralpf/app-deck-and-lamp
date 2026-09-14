@@ -140,6 +140,14 @@ void on_debug(HttpRequest& req, const char* ep)
     app.flagPrintJson = true;
 }
 
+void on_sync_state(HttpRequest& req, const char* ep)
+{
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
+    JsonWriter json;
+    app.emit_json(json);
+    req.send(200, "application/json", json.get_cstring());
+}
+
 //............................................................................................HEADER
 
 
@@ -163,5 +171,7 @@ void endpoints_init()
     asyncBackend_register_endpoint("/esp/deck", on_deck);
     // debug
     asyncBackend_register_endpoint("/esp/debug", on_debug);
+    // sync
+    asyncBackend_register_endpoint("/esp/sync/state", on_sync_state);
 
 }
