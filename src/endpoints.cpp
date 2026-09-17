@@ -160,10 +160,10 @@ void endpoints_init()
     asyncBackend_register_endpoint("/esp/lamp/picker", on_lamp_picker);
     asyncBackend_register_endpoint("/esp/lamp/hsv", on_lamp_hsv);
     asyncBackend_register_endpoint("/esp/lamp/mood", on_lamp_mood);
-    asyncBackend_register_endpoint("/esp/lamp/flik", on_lamp_flicker);
+    asyncBackend_register_endpoint("/esp/lamp/flick", on_lamp_flicker);
     asyncBackend_register_endpoint("/esp/lamp", on_lamp);
     // deck
-    asyncBackend_register_endpoint("/esp/deck/flik", on_deck_flicker);
+    asyncBackend_register_endpoint("/esp/deck/flick", on_deck_flicker);
     asyncBackend_register_endpoint("/esp/deck/mirror", on_deck_mirror);
     asyncBackend_register_endpoint("/esp/deck/hsv", on_deck_hsv);
     asyncBackend_register_endpoint("/esp/deck/picker", on_deck_picker);
