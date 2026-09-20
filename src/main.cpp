@@ -96,7 +96,7 @@ void loop_debug()
     if (app.flagPrintJson)
     {
         app.flagPrintJson = false;
-        app.emit_json(json);
+        app.emit_StateJson(json);
         SPrint("%s", json.get_cstring());
     }
 }
@@ -140,6 +140,7 @@ void loop_lamp()
 void loop_deck()
 {
     ledsDeck.bright = app.deck.luma;
+    ledsDeck.anim.speed = app.deck.palette.speed;
     ledsDeck.anim.update();
     ledsDeck.rand.isOn = app.deck.palette.isRandz;
 
@@ -161,8 +162,7 @@ void loop_deck()
         case Settings::Deck::EMode::Palette: {      // 3
         CRGBPalette16 pal = palette_from_idx(app.deck.palette.idx);
         // display with FX
-        if (app.deck.palette.isStillBlending)
-            app.deck.palette.isStillBlending = ledsDeck.SetPaletteFX(pal);
+        ledsDeck.SetPaletteFX(pal);
         return;     // for palette mode no flicker is available
         }
 

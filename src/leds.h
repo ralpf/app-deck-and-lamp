@@ -70,17 +70,10 @@ class Leds
     }
 
 
-    bool SetPaletteFX(const CRGBPalette16& pal16, ui8 maxChange=(ui8)24U)   // returns true if fx in process
+    void SetPaletteFX(const CRGBPalette16& pal16, ui8 maxChange=(ui8)24U)
     {
-        if (maxChange > 0 && palette_compare(pal, pal16) == false)
-        {
-            nblendPaletteTowardPalette(pal, const_cast<CRGBPalette16&>(pal16), maxChange);
-            _ApplyPalette();
-            return true;      // with fx
-        }
-
-        SetPalette(pal16);
-        return false;         //  w/o fx
+        nblendPaletteTowardPalette(pal, const_cast<CRGBPalette16&>(pal16), maxChange);
+        _ApplyPalette();
     }
 
 
@@ -96,8 +89,9 @@ class Leds
     {
         for (ui16 i = 0; i < COUNT; ++i)
         {
-            ui8 palIdx = i * LED2PAL + anim.offset;
-            _SetRGB( i, ColorFromPalette(pal, palIdx) );
+            ui16 pos = rand.isOn ? rand.Remap(i) : i;
+            ui8 palIdx = (int)(pos * LED2PAL + anim.offset);    // use int for correct wrap
+            _SetRGB(i, ColorFromPalette(pal, palIdx));
         }
     }
 
@@ -106,7 +100,6 @@ class Leds
     {
         ui8 luma = bright;
         idx = constrain(idx, 0, COUNT-1);
-        //if (rand.isOn) idx = rand.Remap(idx);
 
         //              can add more filters or corrections
         if (gammaLUT != nullptr)        // gamma correction
@@ -127,7 +120,7 @@ class Leds
 
         void update()
         {
-            offset += timeSrv.dt() * speed;
+            offset += timeSrv.dt() * speed * 0.01f;
             // fix floating point err accumulation
             offset = fmodf(offset, 256.0f);
         }

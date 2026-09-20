@@ -91,9 +91,9 @@ struct Settings
         // inner type
         struct Palette
         {
-            bool isStillBlending;  // NO-EMIT-JSON     // this is a runtime var
             bool isRandz = false;
-            ui8  idx = 0;
+            ui8  speed = 4;         // index translation speed
+            ui8  idx = 0;           // curr palette idx
         };
 
         // top level storage
@@ -121,7 +121,8 @@ struct Settings
 
     //........................................................TO-JSON
 
-    void emit_json(JsonWriter& json);
+    void emit_StateJson(JsonWriter& json);          // for sync with webpage
+    void emit_PalleteJson(JsonWriter& json);        // available palletes as json array
 };
 
 //.............................................................SINGLE

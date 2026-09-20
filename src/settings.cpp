@@ -1,4 +1,5 @@
 #include "settings.h"
+#include "palettes.h"
 
 #include <jsonWriter.h>
 #include <colorUtils.h>
@@ -13,7 +14,12 @@ Settings app;   // main app state data
 
 //...........................................................................................TO-JSON
 
-void Settings::emit_json(JsonWriter& json)
+void Settings::emit_PalleteJson(JsonWriter& json)
+{
+    palette_emit_names_json(json);
+}
+
+void Settings::emit_StateJson(JsonWriter& json)
 {
     // scopes present to support folding
     json.root(); {
@@ -62,24 +68,12 @@ void Settings::emit_json(JsonWriter& json)
         json.field_obj("deck"); {
             json.field_ui("luma", deck.luma);
 
-            json.field_obj("flick"); {
-                json.field_b("isOn", deck.flik.isOn);
-                json.field_obj("hue"); {
-                    json.field_f ("spd", deck.flik.hue.spd);
-                    json.field_ui("ampl", deck.flik.hue.ampl);
-                json.end(); }
-                json.field_obj("val"); {
-                    json.field_f("spd", deck.flik.val.spd);
-                    json.field_ui("ampl", deck.flik.val.ampl);
-                json.end(); }
-            json.end(); } // flick
-
             json.field_ui("mode", (ui32)deck.mode);
 
             json.field_obj("sliders"); {
                 json.field_ui("hue", deck.sliders.hue);
                 json.field_ui("sat", deck.sliders.sat);
-            json.end(); }
+            json.end(); } // sliders
 
             json.field_obj("picker"); {
                 json.field_ui("max", Pickers::max);
@@ -91,6 +85,8 @@ void Settings::emit_json(JsonWriter& json)
             json.end(); } // picker
 
             json.field_obj("palette"); {
+                json.field_b("rand", deck.palette.isRandz);
+                json.field_ui("spd", deck.palette.speed);
                 json.field_ui("idx", deck.palette.idx);
             json.end(); } // palette
 

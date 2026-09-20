@@ -84,7 +84,6 @@ void on_deck(HttpRequest& req, const char* ep)
     i32 i;
     if (req.try_arg_i("mode", i)) app.deck.mode = (Settings::Deck::EMode)i;
     if (req.try_arg_i("luma", i)) app.deck.luma = i;
-    if (req.try_arg_i("pal", i))  app.deck.palette
 }
 
 void on_deck_flicker(HttpRequest& req, const char* ep)
@@ -128,9 +127,10 @@ void on_deck_picker(HttpRequest& req, const char* ep)
 void on_deck_palette(HttpRequest& req, const char* ep)
 {
     if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
-    i32 i;
-    if (req.try_arg_i("pal", i)) app.deck.palette.idx = i;
-    app.deck.palette.isStillBlending = true;          // force reload palette
+    i32 i; bool b;
+    if (req.try_arg_b("rand", b)) app.deck.palette.isRandz = b;
+    if (req.try_arg_i("spd",  i)) app.deck.palette.speed = i;
+    if (req.try_arg_i("idx",  i)) app.deck.palette.idx = i;
     app.deck.mode = Settings::Deck::EMode::Palette;
 }
 
