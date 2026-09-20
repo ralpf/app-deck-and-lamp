@@ -55,9 +55,11 @@ DEFINE_GRADIENT_PALETTE(palData_MarineBlue)
 
 
 DEFINE_GRADIENT_PALETTE(palData_Turq) {
+  0, 55, 255, 55,
   76, 55, 255, 55,
   127, 255, 255, 55,
-  178, 55, 255, 55
+  178, 55, 255, 55,
+  255, 55, 255, 55
 };
 
 
@@ -66,7 +68,8 @@ DEFINE_GRADIENT_PALETTE(palData_Sunset_Real) {
   22, 189, 22, 0,
   51, 255, 104, 0,
   85, 178, 22, 25,
-  135, 115, 0, 115
+  135, 115, 0, 115,
+  255, 115, 0, 115
 };
 
 //============================= PALETTE SPECIAL ===============================
