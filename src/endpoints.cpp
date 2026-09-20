@@ -84,6 +84,7 @@ void on_deck(HttpRequest& req, const char* ep)
     i32 i;
     if (req.try_arg_i("mode", i)) app.deck.mode = (Settings::Deck::EMode)i;
     if (req.try_arg_i("luma", i)) app.deck.luma = i;
+    if (req.try_arg_i("pal", i))  app.deck.palette
 }
 
 void on_deck_flicker(HttpRequest& req, const char* ep)
@@ -144,7 +145,15 @@ void on_sync_state(HttpRequest& req, const char* ep)
 {
     if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
     JsonWriter json;
-    app.emit_json(json);
+    app.emit_StateJson(json);
+    req.send(200, "application/json", json.get_cstring());
+}
+
+void on_sync_available_palletes(HttpRequest& req, const char* ep)
+{
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
+    JsonWriter json;
+    app.emit_PalleteJson(json);
     req.send(200, "application/json", json.get_cstring());
 }
 
@@ -173,5 +182,6 @@ void endpoints_init()
     asyncBackend_register_endpoint("/esp/debug", on_debug);
     // sync
     asyncBackend_register_endpoint("/esp/sync/state", on_sync_state);
+    asyncBackend_register_endpoint("/esp/sync/palette", on_sync_available_palletes);
 
 }
