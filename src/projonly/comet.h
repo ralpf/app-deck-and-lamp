@@ -16,9 +16,9 @@ class Comet
     ui8   speed = 16;                   // the speed of the comet, in leds per second
     ui8   headLenth = 3;                // the size of the comet head
     ui8   tailLength = 16;              // tail length, in number of affected leds
-    CHSV  headColor;
-    CHSV  tailStartColor;
-    CHSV  tailEndColor;
+    CRGB  headColor;
+    CRGB  tailStartColor;
+    CRGB  tailEndColor;
     bool  directionLeftToRight = true;  // direction of propagation
 
     public:

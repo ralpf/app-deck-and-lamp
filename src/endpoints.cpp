@@ -147,6 +147,14 @@ void on_deck_palette(HttpRequest& req, const char* ep)
     app.deck.mode = Settings::Deck::EMode::Palette;
 }
 
+void on_deck_fire(HttpRequest& req, const char* ep)
+{
+    i32 i;
+    if (req.try_arg_i("temp", i)) app.deck.fire.temperature = i;
+    if (req.try_arg_i("spd", i))  app.deck.fire.speed = i;
+    app.deck.mode = Settings::Deck::EMode::Fire;
+}
+
 //.....................................................................................DEBUG-HANDLER
 
 void on_debug(HttpRequest& req, const char* ep)
@@ -192,6 +200,7 @@ void endpoints_init()
     asyncBackend_register_endpoint("/esp/deck/hsv", on_deck_hsv);
     asyncBackend_register_endpoint("/esp/deck/picker", on_deck_picker);
     asyncBackend_register_endpoint("/esp/deck/palette", on_deck_palette);
+    asyncBackend_register_endpoint("/esp/deck/fire", on_deck_fire);
     asyncBackend_register_endpoint("/esp/deck", on_deck);
     // debug
     asyncBackend_register_endpoint("/esp/debug", on_debug);

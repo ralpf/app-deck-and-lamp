@@ -9,6 +9,7 @@
 #include "palettes.h"
 #include "perlin.h"
 #include "projonly/comet.h"
+#include "projonly/fireDeck.h"
 
 #include "settings.h"
 #include "endpoints.h"
@@ -35,8 +36,10 @@ LedsHardware<LED_LAMP_PIN, LED_LAMP_COUNT> _ledsLampHard;
 // use this to control leds
 LedsStrip& ledsDeck = _ledsDeckHard;
 LedsStrip& ledsLamp = _ledsLampHard;
-// fome FX
+// some FX
 Comet ledsDeckComet(ledsDeck);
+FireDeck ledsDeckFire(ledsDeck);
+
 
 //.........................................................................................GLOBAL-FX
 
@@ -173,11 +176,17 @@ void loop_deck()
         app.deck.hsv32_target = app.deck.pickers.to_hsv32();
         break;
 
-        case Settings::Deck::EMode::Palette: {      // 3
+        case Settings::Deck::EMode::Palette: {      // 3 (early return)
         CRGBPalette16 pal = palette_from_idx(app.deck.palette.idx);
         // display with FX
         ledsDeck.SetPaletteFX(pal);
         return;     // for palette mode no flicker is available
+        }
+
+        case Settings::Deck::EMode::Fire: {         // 4 (early return)
+        ledsDeckFire.Setup(app.deck.fire);
+        ledsDeckFire.Update();
+        return;
         }
 
         default:
@@ -209,9 +218,9 @@ void loop_fx()
         ledsDeckComet.speed = app.glob.comet.speed;
         ledsDeckComet.headLenth  = app.glob.comet.headLength;
         ledsDeckComet.tailLength = app.glob.comet.tailLength;
-        ledsDeckComet.headColor  = rgb_2_hsv_slow( ui32_2_rgb( app.glob.comet.rgb32ColorHead ) );
-        ledsDeckComet.tailStartColor  = rgb_2_hsv_slow( ui32_2_rgb( app.glob.comet.rgb32ColorTailStart ) );
-        ledsDeckComet.tailEndColor    = rgb_2_hsv_slow( ui32_2_rgb( app.glob.comet.rgb32ColorTailEnd ) );
+        ledsDeckComet.headColor  = ui32_2_rgb( app.glob.comet.rgb32ColorHead );
+        ledsDeckComet.tailStartColor  = ui32_2_rgb( app.glob.comet.rgb32ColorTailStart );
+        ledsDeckComet.tailEndColor    = ui32_2_rgb( app.glob.comet.rgb32ColorTailEnd );
         ledsDeckComet.StartOne();
     }
     // maybe more effects, only after it

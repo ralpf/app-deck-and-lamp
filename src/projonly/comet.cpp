@@ -26,16 +26,13 @@ void Comet::Update()
 
     leds.ScaleDown(backgroundScaleDown8);
 
-    CRGB head = headColor;
     for (ui16 i = 0; i < headLenth; ++i)
-        leds.OverlayColor(head, position - direction * i);
+        leds.OverlayColor(headColor, position - direction * i);
 
-    CRGB tailStart = tailStartColor;
-    CRGB tailEnd = tailEndColor;
     for (ui16 i = 0; i < tailLength; ++i)
     {
         ui8 mix = tailLength > 1 ? i * 255 / (tailLength - 1) : 0;
-        CRGB color = blend(tailStart, tailEnd, mix);
+        CRGB color = blend(tailStartColor, tailEndColor, mix);
         ui8 fade = (tailLength - i) * 255 / (tailLength + 1);
         color.nscale8_video(fade);
         leds.OverlayColor(color, position - direction * (headLenth + i));
@@ -45,6 +42,7 @@ void Comet::Update()
 
 void Comet::StartOne()
 {
+    if (this->speed == 0) this->speed = 1;  // otherwise the bg dimm will never end
     position = directionLeftToRight ? -1.0f : (float)leds.Count();
     lastUpdateMs = millis();
     isRunning = true;

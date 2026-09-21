@@ -98,7 +98,7 @@ struct Settings
     struct Deck
     {
         // inner enum
-        enum class EMode : ui8 { MirrorLamp, Sliders, Picker, Palette };
+        enum class EMode : ui8 { MirrorLamp, Sliders, Picker, Palette, Fire };
 
         // inner type
         struct Palette
@@ -106,6 +106,13 @@ struct Settings
             bool isRandz = false;
             ui8  speed = 4;         // index translation speed
             ui8  idx = 0;           // curr palette idx
+        };
+
+        // inner type
+        struct Fire
+        {
+            ui16 temperature = 4800;
+            ui16 speed = 100;
         };
 
         // top level storage
@@ -118,6 +125,7 @@ struct Settings
         Sliders sliders;
         Pickers pickers;
         Palette palette;
+        Fire    fire;
 
         ui32 hsv32_target = 0;   // NO-EMIT-JSON             // target HSV, w/o effects
         ui32 hsv32_actual = 0;   // NO-EMIT-JSON             // actual HSV, with all aplied effects
