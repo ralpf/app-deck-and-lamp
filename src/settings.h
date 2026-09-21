@@ -68,7 +68,7 @@ struct Settings
 
         // top level storage
         ui8 luma = 200;     // lamp brightess
-        Flicker flik;       // shared between modes
+        Flicker flik;       // shared between modes. SET by main.cpp to non-zero default
 
         EMode mode = EMode::Mood;     // current mode
 

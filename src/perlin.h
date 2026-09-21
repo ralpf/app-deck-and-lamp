@@ -49,7 +49,7 @@ struct Perlin
     private:
     void _Update()
     {
-        ui32 distance = timeSrv.now() * spd;
+        ui32 distance = timeSrv.now() * spd * 0.01f;
         distance += off;
         f = inoise8(distance) / 255.0f;
     }

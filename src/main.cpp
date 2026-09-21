@@ -8,6 +8,7 @@
 #include "leds.h"
 #include "palettes.h"
 #include "perlin.h"
+#include "projonly/comet.h"
 
 #include "settings.h"
 #include "endpoints.h"
@@ -32,6 +33,10 @@
 Leds<LED_DECK_PIN, LED_DECK_COUNT> ledsDeck;
 Leds<LED_LAMP_PIN, LED_LAMP_COUNT> ledsLamp;
 
+//.........................................................................................GLOBAL-FX
+
+
+
 //........................................................................................GAMMA-CORR
 
 ui8  gammaLUT[256];                // global gamma table
@@ -42,7 +47,9 @@ JsonWriter json;
 void recaluculate_gamma_LUT();
 void loop_lamp();
 void loop_deck();
+void loop_fx();
 void loop_debug();
+void change_default_settings();
 CHSV flicker_color_hsv(Settings::Flicker flik, CHSV hsv);
 
 //...............................................................................................ESP
@@ -69,6 +76,7 @@ void setup()
     SPrint("OK: Leds inited Blazar (%u leds) Deck (%u leds)\n", LED_LAMP_COUNT, LED_DECK_COUNT);
     // update LUT gamma correction
     // recaluculate_gamma_LUT();
+    change_default_settings();
 }
 
 void loop()
@@ -84,6 +92,7 @@ void loop()
 
     loop_lamp();
     loop_deck();
+    loop_fx();
     loop_debug();
 
     FastLED.show();
@@ -185,6 +194,13 @@ void loop_deck()
     ledsDeck.SetColor(ui32_2_hsv(app.deck.hsv32_actual));
 }
 
+
+void loop_fx()
+{
+    // some ontop overlay effects
+
+}
+
 //.........................................................................FX
 
 CHSV flicker_color_hsv(Settings::Flicker flik, CHSV hsv)
@@ -199,7 +215,9 @@ CHSV flicker_color_hsv(Settings::Flicker flik, CHSV hsv)
     if (flik.val.spd > 0 && flik.val.ampl > 0)
     {
         Perlin noise(flik.val.spd, flik.val.ampl);
-        hsv.val += noise.compute(Perlin::EMode::Substractive);
+        // this value can overflow, so we check for it (causes white flashes)
+        int value = hsv.val + noise.compute(Perlin::EMode::Substractive);
+        hsv.val = value < 0 ? 0 : value;
     }
     return hsv;
 }
@@ -215,7 +233,13 @@ void recaluculate_gamma_LUT()
 }
 
 
-
+void change_default_settings()
+{
+    // here override the default settings, so settings.h stays simple
+    app.lamp.flik.isOn = true;
+    app.lamp.flik.hue.spd = 15;
+    app.lamp.flik.hue.ampl = 120;
+}
 
 
 
