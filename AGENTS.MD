@@ -1,5 +1,18 @@
 Read PROJECT.MD for project-specific architecture, execution flow, and formatting context.
 
+Class layout order:
+1. Global/static fields
+2. Instance fields
+3. Constructors/destructors
+4. Public methods
+5. Private methods
+6. Nested types
+
+Keep instance fields together at the top, including fields of nested types.
+Put nested type definitions at the bottom. If C++ type-completeness rules prevent
+this layout, explain the conflict before changing the structure; do not silently
+move instance fields to the bottom or introduce indirection just for formatting.
+
 it is crucial to understand that this c++ project is build with a kind of phylosophy. It uses c++ features, but prefers a C style aproach. An example is main.cpp - you can see that it declares global variables, is formatted well (with a few exceptions) and has a certain visual look, and in-memory look. It uses 'naked' functions defined in others .h files. It is kind of minimalistic. But it won't trade minimalisticity for readability!
 
 maintaining and readability is a core concept of the project.

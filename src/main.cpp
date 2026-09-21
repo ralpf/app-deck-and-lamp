@@ -5,7 +5,7 @@
 #include <asyncWebsocket.h>
 #include <timeService.h>
 
-#include "leds.h"
+#include "ledsHardware.h"
 #include "palettes.h"
 #include "perlin.h"
 #include "projonly/comet.h"
@@ -20,7 +20,7 @@
 
 
 
-#define VERSION "0.9.0"
+#define VERSION "0.1.01"
 #define LED_LAMP_PIN   14          // GPIO14 data pin
 #define LED_LAMP_COUNT 12          // led ring of 6x2
 #define LED_DECK_PIN   26
@@ -30,8 +30,11 @@
 
 //........................................................................................ALLOC-LEDS
 
-Leds<LED_DECK_PIN, LED_DECK_COUNT> ledsDeck;
-Leds<LED_LAMP_PIN, LED_LAMP_COUNT> ledsLamp;
+LedsHardware<LED_DECK_PIN, LED_DECK_COUNT> _ledsDeckHard;
+LedsHardware<LED_LAMP_PIN, LED_LAMP_COUNT> _ledsLampHard;
+// use this to control leds
+LedsStrip& ledsDeck = _ledsDeckHard;
+LedsStrip& ledsLamp = _ledsLampHard;
 
 //.........................................................................................GLOBAL-FX
 
