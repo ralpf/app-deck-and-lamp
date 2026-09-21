@@ -67,6 +67,32 @@ class LedsStrip
     }
 
 
+    void OverlayColor(const CRGB& rgb, float idx)
+    {
+        if (!(idx > -1.0f && idx < ledCount)) return;
+
+        i32 leftIdx = (i32)floorf(idx);
+        ui16 weight = (ui16)((idx - leftIdx) * 256.0f + 0.5f);
+        CRGB color = _CorrectRGB(rgb);
+
+        // split the corrected color without losing light to rounding
+        CRGB right((color.r * weight + 128) / 256,
+                   (color.g * weight + 128) / 256,
+                   (color.b * weight + 128) / 256);
+        CRGB left(color.r - right.r, color.g - right.g, color.b - right.b);
+
+        // add with saturation; off-strip contributions are discarded
+        if (leftIdx >= 0) leds[leftIdx] += left;
+        if (leftIdx + 1 < ledCount) leds[leftIdx + 1] += right;
+    }
+
+
+    void ScaleDown(ui8 scale)
+    {
+        for (ui16 i = 0; i < ledCount; ++i) leds[i].nscale8(scale);
+    }
+
+
     void SetPalette(const CRGBPalette16& pal16)
     {
         pal = pal16;
@@ -102,8 +128,14 @@ class LedsStrip
 
     void _SetRGB(ui16 idx, CRGB rgb)
     {
-        ui8 luma = bright;
         idx = constrain(idx, 0, ledCount-1);
+        leds[idx] = _CorrectRGB(rgb);
+    }
+
+
+    CRGB _CorrectRGB(CRGB rgb)
+    {
+        ui8 luma = bright;
 
         //              can add more filters or corrections
         if (gammaLUT != nullptr)        // gamma correction
@@ -112,7 +144,7 @@ class LedsStrip
             luma = gammaLUT[luma]; // lut the brightness too
         }
         // apply leds brightness
-        leds[idx] = rgb.nscale8(luma);
+        return rgb.nscale8(luma);
     }
 
     //...............................................................NESTED-TYPE

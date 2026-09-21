@@ -23,6 +23,19 @@ void on_global(HttpRequest& req, const char* ep)
     }
 }
 
+void on_global_comet(HttpRequest& req, const char* ep)
+{
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
+    const ui8 SZ = 16; char buff[SZ]; i32 i;
+    if (req.try_arg_s("headCol", buff, SZ))  app.glob.comet.rgb32ColorHead = html_2_rgb_2_ui32(buff);
+    if (req.try_arg_s("tailSCol", buff, SZ)) app.glob.comet.rgb32ColorTailStart = html_2_rgb_2_ui32(buff);
+    if (req.try_arg_s("tailECol", buff, SZ)) app.glob.comet.rgb32ColorTailEnd = html_2_rgb_2_ui32(buff);
+    if (req.try_arg_i("spd", i))             app.glob.comet.speed = i;
+    if (req.try_arg_i("headLen", i))         app.glob.comet.headLength = i;
+    if (req.try_arg_i("tailLen", i))         app.glob.comet.tailLength = i;
+    app.glob.comet.spaw_comet_now = true;
+}
+
 //.....................................................................................LAMP HANDLERS
 
 
@@ -163,6 +176,8 @@ void on_sync_available_palletes(HttpRequest& req, const char* ep)
 void endpoints_init()
 {
     // NOTE: the order is important for matching!
+    // FX
+    asyncBackend_register_endpoint("/esp/glob/comet", on_global_comet);
     // glob
     asyncBackend_register_endpoint("/esp/glob", on_global);
     // lamp

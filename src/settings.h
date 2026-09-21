@@ -41,6 +41,17 @@ struct Settings
         ui32 to_hsv32();
     };
 
+    struct Comet    // don't emit json for this struct
+    {
+        ui8  speed = 32;
+        ui8  headLength = 3;
+        ui8  tailLength = 24;
+        ui32 rgb32ColorHead       = 0xF0FFFF;   // azure
+        ui32 rgb32ColorTailStart  = 0xF5F5DC;   // beige
+        ui32 rgb32ColorTailEnd    = 0xFF0000;   // red
+        bool spaw_comet_now;                    // flag
+    };
+
     //.....................................................MODE-TYPE
 
     struct Global
@@ -48,7 +59,8 @@ struct Settings
         ui8 luma = 200;
         float gamma = 1;
 
-        bool update_gamma = false;     // NO-EMIT-JSON
+        Comet comet;                    // NO-EMIT-JSON
+        bool update_gamma = false;      // NO-EMIT-JSON
     };
 
     //.....................................................MODE-TYPE

@@ -35,6 +35,8 @@ LedsHardware<LED_LAMP_PIN, LED_LAMP_COUNT> _ledsLampHard;
 // use this to control leds
 LedsStrip& ledsDeck = _ledsDeckHard;
 LedsStrip& ledsLamp = _ledsLampHard;
+// fome FX
+Comet ledsDeckComet(ledsDeck);
 
 //.........................................................................................GLOBAL-FX
 
@@ -201,7 +203,19 @@ void loop_deck()
 void loop_fx()
 {
     // some ontop overlay effects
-
+    if (app.glob.comet.spaw_comet_now)
+    {
+        app.glob.comet.spaw_comet_now = false;
+        ledsDeckComet.speed = app.glob.comet.speed;
+        ledsDeckComet.headLenth  = app.glob.comet.headLength;
+        ledsDeckComet.tailLength = app.glob.comet.tailLength;
+        ledsDeckComet.headColor  = rgb_2_hsv_slow( ui32_2_rgb( app.glob.comet.rgb32ColorHead ) );
+        ledsDeckComet.tailStartColor  = rgb_2_hsv_slow( ui32_2_rgb( app.glob.comet.rgb32ColorTailStart ) );
+        ledsDeckComet.tailEndColor    = rgb_2_hsv_slow( ui32_2_rgb( app.glob.comet.rgb32ColorTailEnd ) );
+        ledsDeckComet.StartOne();
+    }
+    // maybe more effects, only after it
+    ledsDeckComet.Update();
 }
 
 //.........................................................................FX
