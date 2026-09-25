@@ -8,8 +8,8 @@
 #include "ledsHardware.h"
 #include "palettes.h"
 #include "perlin.h"
-#include "projonly/comet.h"
-#include "projonly/fireDeck.h"
+#include "deckFX/comet.h"
+#include "deckFX/fireDeck.h"
 
 #include "settings.h"
 #include "endpoints.h"

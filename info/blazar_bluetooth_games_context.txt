@@ -1,0 +1,15 @@
+Blazar / ESP32 Bluetooth games — agreed implementation context
+
+The existing setup must remain intact. The ESP32 is connected to a Wi-Fi router, serves the normal HTML frontend over HTTP, and receives ordinary control commands through HTTP GET requests. Frontend CSS and JavaScript are hosted on GitHub Pages. Do not migrate the normal frontend or its HTTP API to HTTPS/Bluetooth as part of this feature.
+
+Add a separate, full HTTPS games webpage hosted on GitHub Pages. The normal ESP32 page will offer a Games link/button that navigates to this HTTPS page. It must be a separate top-level HTTPS document, not HTML injected into the existing HTTP document. Bluetooth is used only for games; the ordinary frontend continues using HTTP GET.
+
+The games page contains simple interactive controls. JavaScript uses the Web Bluetooth API with Bluetooth Low Energy (BLE), not Bluetooth Classic, to connect to the ESP32 and send button/game commands by writing to a BLE GATT characteristic. The ESP32 runs the BLE GATT server and handles game logic and LED-strip effects. It sends game state/results/events back to the connected pages using BLE notifications. Define a small game-specific command/event protocol when implementing.
+
+Support at least two simultaneous BLE players, including an Android phone and an iPhone. Keep the ESP32 advertising after the first connection, identify which BLE client/player sent each command, and deliver notifications to the appropriate connected clients. Verify multi-client behavior with the selected ESP32 variant and BLE library. HTTP/Wi-Fi operation and BLE game connections should coexist.
+
+Android: use a Web Bluetooth-capable browser, typically Chrome. iOS: ordinary Safari and Chrome do not provide Web Bluetooth; users must install and open the HTTPS games URL in a compatible browser such as Bluefy – Web BLE Browser. The same games web UI should serve both platforms; test Bluefy-specific API behavior on a real iPhone.
+
+The first Bluetooth device selection/authorization requires a user action (e.g., Connect) in the games page. An immediate, silent first-time connection on page load is not possible. Attempt convenient reconnection to previously authorized devices where supported, but retain a manual Connect/reconnect fallback. Handle disconnects and two-player join/leave cleanly.
+
+Scope: implement the separate HTTPS BLE games transport and multiplayer messaging without redesigning or replacing the existing ESP32 HTTP frontend. No native mobile app is planned.
