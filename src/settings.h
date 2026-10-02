@@ -2,6 +2,7 @@
 
 #include <Types.h>
 #include <jsonWriter.h>
+#include "entity/ledfx/lefFxHeaders.h"
 
 
 
@@ -68,7 +69,7 @@ struct Settings
     struct Lamp
     {
         // inner enum
-        enum class EMode : ui8 { Mood, Sliders, Picker };
+        enum class EMode : ui8 { Mood, Sliders, Picker, FireSimple };
 
         // inner type
         struct Mood
@@ -88,6 +89,8 @@ struct Settings
         Mood mood;
         Sliders sliders;
         Pickers pickers;
+        // entity aproach (will migrate the code to it)
+        FireSimple::Settings* pFireSimple = nullptr;
 
         ui32 hsv32_target = 0;   // NO-EMIT-JSON             // target HSV, w/o effects
         ui32 hsv32_actual = 0;   // NO-EMIT-JSON             // actual HSV, with all aplied effects

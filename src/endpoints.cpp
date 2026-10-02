@@ -89,6 +89,26 @@ void on_lamp_picker(HttpRequest& req, const char* ep)
     app.lamp.mode = Settings::Lamp::EMode::Picker;
 }
 
+void on_lamp_fireSimple(HttpRequest& req, const char* ep)
+{
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
+    if (app.lamp.pFireSimple == nullptr) return;
+
+    i32 i; float f;
+
+    if (req.try_arg_i("minLen", i)) app.lamp.pFireSimple->minPhaseLengthMs = i;
+    if (req.try_arg_i("maxLen", i)) app.lamp.pFireSimple->maxPhaseLengthMs = i;
+
+    if (req.try_arg_i("minTemp", i)) app.lamp.pFireSimple->minTemperature = i;
+    if (req.try_arg_i("maxTemp", i)) app.lamp.pFireSimple->maxTemperature = i;
+    if (req.try_arg_i("hueShift", i)) app.lamp.pFireSimple->hueShift = i;
+
+    if (req.try_arg_f("K", f)) app.lamp.pFireSimple->filterKFactor = constrain(f, 0, 1);
+    if (req.try_arg_f("speed", f)) app.lamp.pFireSimple->speed = constrain(f, 0.01f, 100);
+
+    app.lamp.mode = Settings::Lamp::EMode::FireSimple;
+}
+
 //.....................................................................................DECK HANDLERS
 
 void on_deck(HttpRequest& req, const char* ep)
@@ -193,6 +213,7 @@ void endpoints_init()
     asyncBackend_register_endpoint("/esp/lamp/hsv", on_lamp_hsv);
     asyncBackend_register_endpoint("/esp/lamp/mood", on_lamp_mood);
     asyncBackend_register_endpoint("/esp/lamp/flick", on_lamp_flicker);
+    asyncBackend_register_endpoint("/esp/lamp/fireSimple", on_lamp_fireSimple);
     asyncBackend_register_endpoint("/esp/lamp", on_lamp);
     // deck
     asyncBackend_register_endpoint("/esp/deck/flick", on_deck_flicker);

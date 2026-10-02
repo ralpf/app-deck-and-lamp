@@ -10,6 +10,7 @@
 #include "perlin.h"
 #include "deckFX/comet.h"
 #include "deckFX/fireDeck.h"
+#include "entity/ledfx/lefFxHeaders.h"
 
 #include "settings.h"
 #include "endpoints.h"
@@ -21,7 +22,7 @@
 
 
 
-#define VERSION "0.1.01"
+#define VERSION "0.1.02"
 #define LED_LAMP_PIN   14          // GPIO14 data pin
 #define LED_LAMP_COUNT 12          // led ring of 6x2
 #define LED_DECK_PIN   26
@@ -39,7 +40,7 @@ LedsStrip& ledsLamp = _ledsLampHard;
 // some FX
 Comet ledsDeckComet(ledsDeck);
 FireDeck ledsDeckFire(ledsDeck);
-
+FireSimple ledLampFireSimple(ledsLamp);
 
 //.........................................................................................GLOBAL-FX
 
@@ -85,6 +86,8 @@ void setup()
     // update LUT gamma correction
     // recaluculate_gamma_LUT();
     change_default_settings();
+    // register leds setup structs entry points
+    app.lamp.pFireSimple = ledLampFireSimple.GetSettings();
 }
 
 void loop()
@@ -137,6 +140,10 @@ void loop_lamp()
         case Settings::Lamp::EMode::Picker:     // 2
         app.lamp.hsv32_target = app.lamp.pickers.to_hsv32();
         break;
+
+        case Settings::Lamp::EMode::FireSimple: // 3
+        ledLampFireSimple.Update();
+        return; // no flicker, no additional effects
     }
 
     if (app.lamp.flik.isOn)
