@@ -11,26 +11,53 @@ void FireSimple::Update()
     float dt = (currTime - prevTime) * s.speed;
     prevTime = currTime;
 
-    // phase timing
-    if (dt < phaseDuration - elapsedTime)
+    const ui8 firePointCount = s.firePointCount;
+    const ui16 ledsPerPoint = leds.Count() / firePointCount;
+
+    for (ui8 i = 0; i < firePointCount; ++i)
     {
-        elapsedTime += dt;
+        FirePoint& p = firePoints[i];
+        _UpdateFirePoint(p, dt);
+        CRGB currColor = _GetFirePointColor(p);
+
+        ui16 fromIdx = i * ledsPerPoint;
+        leds.SetColor(currColor, fromIdx, fromIdx + ledsPerPoint);
+    }
+}
+
+
+void FireSimple::AppendToJson(JsonWriter& jw)
+{
+}
+
+
+void FireSimple::_UpdateFirePoint(FirePoint& p, float dt)
+{
+    // phase timing
+    if (dt < p.phaseDuration - p.elapsedTime)
+    {
+        p.elapsedTime += dt;
     }
     else    // phase ended
     {
-        elapsedTime = 0;
+        p.elapsedTime = 0;
         // pick a random phase duration in ms
-        phaseDuration = random16(s.maxPhaseLengthMs - s.minPhaseLengthMs) + s.minPhaseLengthMs;
+        p.phaseDuration = random16(s.maxPhaseLengthMs - s.minPhaseLengthMs) + s.minPhaseLengthMs;
         // pick a target temperature
-        targetTemp = random16(s.maxTemperature - s.minTemperature) + s.minTemperature;
+        p.targetTemp = random16(s.maxTemperature - s.minTemperature) + s.minTemperature;
     }
     // update temperature
     float K = s.filterKFactor;
-    if (targetTemp < currTemp) K *= 0.35f;
+    if (p.targetTemp < p.currTemp) K *= 0.35f;
     float k = 1.0f - powf(1.0f - K, dt / 20.0f);
-    currTemp += (targetTemp - currTemp) * k;
+    p.currTemp += (p.targetTemp - p.currTemp) * k;
+}
+
+
+CRGB FireSimple::_GetFirePointColor(const FirePoint& p) const
+{
     // convert to color
-    float heat = currTemp * (255.0f / 6000.0f);
+    float heat = p.currTemp * (255.0f / 6000.0f);
     CRGB currColor = HeatColor((ui8)constrain(heat, 0.0f, 255.0f));
     // warm the colored part while preserving white
     ui8 white = min(currColor.r, min(currColor.g, currColor.b));
@@ -45,11 +72,5 @@ void FireSimple::Update()
     // affect brightness
     ui8 brightness = (ui8)constrain(heat * 2.0f, 0.0f, 255.0f);
     currColor.nscale8_video(brightness);
-    // set leds color
-    leds.SetColor(currColor);
-}
-
-
-void FireSimple::AppendToJson(JsonWriter& jw)
-{
+    return currColor;
 }

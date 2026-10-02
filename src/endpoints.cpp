@@ -96,6 +96,11 @@ void on_lamp_fireSimple(HttpRequest& req, const char* ep)
 
     i32 i; float f;
 
+    if (req.try_arg_i("firePoints", i))
+    {
+        if (i == 1 || i == 2 || i == 3 || i == 6) app.lamp.pFireSimple->firePointCount = i;
+    }
+
     if (req.try_arg_i("minLen", i)) app.lamp.pFireSimple->minPhaseLengthMs = i;
     if (req.try_arg_i("maxLen", i)) app.lamp.pFireSimple->maxPhaseLengthMs = i;
 

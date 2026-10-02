@@ -15,6 +15,7 @@ class FireSimple : public IEntity
     public:
     struct Settings : public ISetting
     {
+        ui8  firePointCount   = 1;
         ui8  hueShift         = 0;
         ui16 minPhaseLengthMs = 150;
         ui16 maxPhaseLengthMs = 900;
@@ -26,6 +27,15 @@ class FireSimple : public IEntity
         void Reset() override { *this = Settings{}; }
     };
 
+    private:
+    struct FirePoint
+    {
+        float elapsedTime = 0;
+        float currTemp = 1000.0f;
+        ui16  phaseDuration = 0;   // pick a random phase on first update
+        ui16  targetTemp = 2000;
+    };
+
 
     public:         // fields
     LedsStrip& leds;
@@ -33,10 +43,7 @@ class FireSimple : public IEntity
 
     private:        // fields
     ui32  prevTime = 0;
-    float elapsedTime = 0;
-    float currTemp = 1000.0f;
-    ui16  phaseDuration = 1000;     // non-zero start value removes some checks in update
-    ui16  targetTemp = 2000;        // same reson for non-zero value
+    FirePoint firePoints[6];
 
     public:         // CTOR
     FireSimple(LedsStrip& target) : leds(target) { }
@@ -45,4 +52,8 @@ class FireSimple : public IEntity
     Settings* GetSettings() override { return &s; }     // uses covariance for returned type
     void AppendToJson(JsonWriter& jw) override;
     void Update() override;
+
+    private:        // methods
+    void _UpdateFirePoint(FirePoint& p, float dt);
+    CRGB _GetFirePointColor(const FirePoint& p) const;
 };
