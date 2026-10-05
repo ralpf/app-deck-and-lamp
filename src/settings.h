@@ -101,7 +101,7 @@ struct Settings
     struct Deck
     {
         // inner enum
-        enum class EMode : ui8 { MirrorLamp, Sliders, Picker, Palette, Fire };
+        enum class EMode : ui8 { MirrorLamp, Sliders, Picker, Palette, Fire, GameSpaceship };
 
         // inner type
         struct Palette

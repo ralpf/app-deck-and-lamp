@@ -15,14 +15,14 @@ class FireSimple : public IEntity
     public:
     struct Settings : public ISetting
     {
-        ui8  firePointCount   = 1;
+        ui8  firePointCount   = 2;      // can be 1, 2, 3, 6. Sets the number of individual fires across blazar's led columns
         ui8  hueShift         = 0;
         ui16 minPhaseLengthMs = 150;
         ui16 maxPhaseLengthMs = 900;
-        ui16 minTemperature   = 1000;
-        ui16 maxTemperature   = 3000;
-        float filterKFactor = 0.12f;
-        float speed = 1.0f;
+        ui16 minTemperature   = 1400;
+        ui16 maxTemperature   = 4000;
+        float filterKFactor   = 0.05f;
+        float speed           = 3.0f;
         // impl. for abstract method
         void Reset() override { *this = Settings{}; }
     };

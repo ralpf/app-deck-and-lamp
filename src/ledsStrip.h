@@ -67,6 +67,37 @@ class LedsStrip
     }
 
 
+    void SetColor(const CRGB& rgb, float idx)
+    {
+        // set the color softly
+        if (!(idx > -1.0f && idx < ledCount)) return;
+
+        i32 leftIdx = (i32)floorf(idx);
+        ui16 weight = (ui16)((idx - leftIdx) * 256.0f + 0.5f);
+        CRGB color = _CorrectRGB(rgb);
+
+        if (leftIdx >= 0 && weight < 256)
+        {
+            CRGB& dst = leds[leftIdx];
+            ui16 coverage = 256 - weight;
+
+            dst.r = (dst.r * weight + color.r * coverage + 128) >> 8;
+            dst.g = (dst.g * weight + color.g * coverage + 128) >> 8;
+            dst.b = (dst.b * weight + color.b * coverage + 128) >> 8;
+        }
+
+        if (leftIdx + 1 < ledCount && weight > 0)
+        {
+            CRGB& dst = leds[leftIdx + 1];
+            ui16 background = 256 - weight;
+
+            dst.r = (dst.r * background + color.r * weight + 128) >> 8;
+            dst.g = (dst.g * background + color.g * weight + 128) >> 8;
+            dst.b = (dst.b * background + color.b * weight + 128) >> 8;
+        }
+    }
+
+
     void OverlayColor(const CRGB& rgb, float idx)
     {
         if (!(idx > -1.0f && idx < ledCount)) return;

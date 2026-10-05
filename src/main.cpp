@@ -12,6 +12,8 @@
 #include "deckFX/fireDeck.h"
 #include "entity/ledfx/lefFxHeaders.h"
 
+#include "entity/game/spaceship/engine.h"
+
 #include "settings.h"
 #include "endpoints.h"
 
@@ -41,6 +43,8 @@ LedsStrip& ledsLamp = _ledsLampHard;
 Comet ledsDeckComet(ledsDeck);
 FireDeck ledsDeckFire(ledsDeck);
 FireSimple ledLampFireSimple(ledsLamp);
+// some games
+SpaceshipGame gameSpaceship(&ledsDeck);
 
 //.........................................................................................GLOBAL-FX
 
@@ -88,6 +92,8 @@ void setup()
     change_default_settings();
     // register leds setup structs entry points
     app.lamp.pFireSimple = ledLampFireSimple.GetSettings();
+    // force mode
+    app.deck.mode = Settings::Deck::EMode::GameSpaceship;
 }
 
 void loop()
@@ -193,6 +199,10 @@ void loop_deck()
         case Settings::Deck::EMode::Fire: {         // 4 (early return)
         ledsDeckFire.Setup(app.deck.fire);
         ledsDeckFire.Update();
+        return;
+
+        case Settings::Deck::EMode::GameSpaceship:  // 5 (early return)
+        gameSpaceship.Update();
         return;
         }
 
