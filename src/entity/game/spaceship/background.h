@@ -12,13 +12,11 @@ class Background : public GObject
     using Layer = SpaceshipGame::Settings::BackgroundLayer;
 
     public:         // fields
-    Layer *pBgFar = nullptr;        // pointer to settings for far background
+    Layer *pStgFar  = nullptr;        // pointer to settings for far background
+    Layer *pStgNear = nullptr;        // pointer to settings for near background
 
-    double scrollBgFar = 0;         // retain smooth movement during long runs
-    //Layer diffuse = { 0.05f, 48.0f, 0.9f, CRGB(90, 8, 160), CRGB(4, 40, 140) };
-    //Layer nebula  = { 0.30f, 14.0f, 2.4f, CRGB(180, 12, 0), CRGB(0, 100, 35) };
-    //Layer stars   = { 0.50f, 54.0f, 0.6f, CRGB(100, 100, 120), CRGB(255, 255, 255) };
-    //float speed = 16.0f;         // LEDs per second, right to left
+    double scrollFar = 0;         // retain smooth movement during long runs
+    double scrollNear = 0;        // same
 
     private:        // fields
     ui16 seed = 117;

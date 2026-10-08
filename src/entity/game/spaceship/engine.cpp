@@ -26,7 +26,8 @@ namespace SpaceshipGame
     void Engine::Awake()
     {
         // connect settings for singletons
-        goBG.pBgFar = &s.bgFar;
+        goBG.pStgFar = &s.bgFar;
+        goBG.pStgNear = &s.bgNear;
         // make the arrays, fill counts
         gObjects[0] = &goBG;
         gObjects[1] = &goPlayer;

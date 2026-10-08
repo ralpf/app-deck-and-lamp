@@ -41,10 +41,10 @@ float computeNoiseMask(float x, ui16 seed, float scale, float threshold, float s
 // }
 
 
-// static CRGB background_color(const BackgroundLayer& layer, float mask, float brightness)
+// static CRGB background_color(const BackgroundLayer& layerFar, float mask, float brightness)
 // {
-//     CRGB rgb = blend(layer.color1, layer.color2, (ui8)(mask * 255.0f));
-//     float strength = constrain(layer.intensity, 0.0f, 1.0f) * brightness;
+//     CRGB rgb = blend(layerFar.color1, layerFar.color2, (ui8)(mask * 255.0f));
+//     float strength = constrain(layerFar.intensity, 0.0f, 1.0f) * brightness;
 //     rgb.nscale8((ui8)(strength * 255.0f));
 //     return rgb;
 // }
@@ -69,35 +69,38 @@ using Layer = SpaceshipGame::Settings::BackgroundLayer;
 void Background::Awake()
 {
     // reset layers
-    scrollBgFar = 0;
+    scrollFar = 0;
+    scrollNear = 0;
 }
 
 
 void Background::Update()
 {
-    scrollBgFar += timeSrv.dt() * pBgFar->speed * 0.001;
+    scrollFar += timeSrv.dt() * pStgFar->speed * 0.001;
+    scrollNear += timeSrv.dt() * pStgNear->speed * 0.001;
 }
 
 
 void Background::Draw(LedsStrip* pLeds)
 {
     if (pLeds == nullptr) return;
-    if (pBgFar == nullptr) return;
+    if (pStgFar == nullptr) return;
+    if (pStgNear == nullptr) return;
 
     ui16 countLeds = pLeds->Count();
-    ui16 seedFar = seed + 100;
-    ui16 seedDetail = seedFar + 10000;
-    Layer& layerFar = *pBgFar;
+    ui16 currSeed = seed + 333;
+    ui16 seedDetail = currSeed + 10000;
+    Layer& layerFar = *pStgFar;
 
-    double whole = floor(scrollBgFar);
-    float fraction = (float)(scrollBgFar - whole);
+    // ==================== far background
+    double whole = floor(scrollFar);
+    float fraction = (float)(scrollFar - whole);
 
     for (ui16 i = 0; i < countLeds; ++i)
     {
-        // far background
         float x = (float)(whole + i);
-        float left = computeNoiseMask(x, seedFar, layerFar.scale, layerFar.treshold, layerFar.softness);
-        float right = computeNoiseMask(x + 1.0f, seedFar, layerFar.scale, layerFar.treshold, layerFar.softness);
+        float left = computeNoiseMask(x, currSeed, layerFar.scale, layerFar.treshold, layerFar.softness);
+        float right = computeNoiseMask(x + 1.0f, currSeed, layerFar.scale, layerFar.treshold, layerFar.softness);
         // carve details into color2
         float detailLeft = computeNoiseMask(x, seedDetail, layerFar.detailScale, 0.5f, 0.05f);
         float detailRight = computeNoiseMask(x + 1.0f, seedDetail, layerFar.detailScale, 0.5f, 0.05f);
@@ -106,13 +109,43 @@ void Background::Draw(LedsStrip* pLeds)
         right *= 1.0f - detailRight * layerFar.detailMult;
         // retain smooth movement
         float f = left + (right - left) * fraction;
-
+        // the color
         CRGB rgb = blend(layerFar.color1, layerFar.color2, (ui8)(f * 255.0f));
         // apply opacity
         rgb.nscale8(layerFar.opacity8);
         // apply resulting color
         pLeds->SetColor(rgb, i);
     }
+
+    // ==================== near background
+    whole = floor(scrollNear);
+    fraction = (float)(scrollNear - whole);
+
+    currSeed = seed + 18349;
+    seedDetail = currSeed + 10000;
+    Layer& layerNear = *pStgNear;
+
+    for (ui16 i = 0; i < countLeds; ++i)
+    {
+        float x = (float)(whole + i);
+        float left = computeNoiseMask(x, currSeed, layerNear.scale, layerNear.treshold, layerNear.softness);
+        float right = computeNoiseMask(x + 1.0f, currSeed, layerNear.scale, layerNear.treshold, layerNear.softness);
+        // carve details into color2
+        float detailLeft = computeNoiseMask(x, seedDetail, layerNear.detailScale, 0.5f, 0.05f);
+        float detailRight = computeNoiseMask(x + 1.0f, seedDetail, layerNear.detailScale, 0.5f, 0.05f);
+
+        left  *= 1.0f - detailLeft  * layerNear.detailMult;
+        right *= 1.0f - detailRight * layerNear.detailMult;
+        // retain smooth movement
+        float f = left + (right - left) * fraction;
+        // the color
+        CRGB rgb = blend(layerNear.color1, layerNear.color2, (ui8)(f * 255.0f));
+        // apply opacity
+        rgb.nscale8(layerNear.opacity8);
+        // apply resulting color
+        pLeds->SetColor(rgb, i);
+    }
+
 }
 
 
