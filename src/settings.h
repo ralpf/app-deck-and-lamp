@@ -3,6 +3,7 @@
 #include <Types.h>
 #include <jsonWriter.h>
 #include "entity/ledfx/lefFxHeaders.h"
+#include "entity/game/spaceship/settings.h"
 
 
 
@@ -129,6 +130,7 @@ struct Settings
         Pickers pickers;
         Palette palette;
         Fire    fire;
+        SpaceshipGame::Settings* pGameStarship = nullptr;
 
         ui32 hsv32_target = 0;   // NO-EMIT-JSON             // target HSV, w/o effects
         ui32 hsv32_actual = 0;   // NO-EMIT-JSON             // actual HSV, with all aplied effects

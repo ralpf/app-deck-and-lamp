@@ -8,38 +8,47 @@ static Background goBG;
 
 
 
-void SpaceshipGame::Update()
+namespace SpaceshipGame
 {
-    if (!inited) this->Awake();
 
-    for (int i = 0; i < countObjs; ++i)
-        gObjects[i]->Update();
+    void Engine::Update()
+    {
+        if (!inited) this->Awake();
 
-    this->Draw(); // each obj draws into leds
-}
+        for (int i = 0; i < countObjs; ++i)
+            gObjects[i]->Update();
 
-
-
-
-void SpaceshipGame::Awake()
-{
-    // make the arrays, fill counts
-    gObjects[0] = &goBG;
-    gObjects[1] = &goPlayer;
-    countObjs = 2;
-
-    for (int i = 0; i < countObjs; ++i)
-        gObjects[i]->Awake();
-
-    inited = true;
-}
+        this->Draw(); // each obj draws into leds
+    }
 
 
 
-void SpaceshipGame::Draw()
-{
-    if (pLeds == nullptr) return;
+    void Engine::Awake()
+    {
+        // connect settings for singletons
+        goBG.pBgFar = &s.bgFar;
+        // make the arrays, fill counts
+        gObjects[0] = &goBG;
+        gObjects[1] = &goPlayer;
+        countObjs = 2;
 
-    for (int i = 0; i < countObjs; ++i)
-        gObjects[i]->Draw(pLeds);
+        for (int i = 0; i < countObjs; ++i)
+            gObjects[i]->Awake();
+
+        inited = true;
+    }
+
+
+
+    void Engine::Draw()
+    {
+        if (pLeds == nullptr) return;
+
+        for (int i = 0; i < countObjs; ++i)
+        {
+            if (i == 1) continue;  // delete, don't draw player
+            gObjects[i]->Draw(pLeds);
+        }
+    }
+
 }

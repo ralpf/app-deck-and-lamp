@@ -44,7 +44,7 @@ Comet ledsDeckComet(ledsDeck);
 FireDeck ledsDeckFire(ledsDeck);
 FireSimple ledLampFireSimple(ledsLamp);
 // some games
-SpaceshipGame gameSpaceship(&ledsDeck);
+SpaceshipGame::Engine gameSpaceship(&ledsDeck);
 
 //.........................................................................................GLOBAL-FX
 
@@ -63,6 +63,7 @@ void loop_deck();
 void loop_fx();
 void loop_debug();
 void change_default_settings();
+void link_settings_pointers();
 CHSV flicker_color_hsv(Settings::Flicker flik, CHSV hsv);
 
 //...............................................................................................ESP
@@ -73,6 +74,8 @@ void setup()
     SPrint("\n\n--------------------[[ ESP32 \"Blazar\" Lamp ]]--------------------");
     SPrint(  "\n---------------------[[ + TV Console supp ]]----------------------");
     SPrint("                                                     Version %s\n", VERSION);
+
+    link_settings_pointers();   // do this before backend starts
 
     asyncBackend_init();
     endpoints_init();
@@ -90,8 +93,7 @@ void setup()
     // update LUT gamma correction
     // recaluculate_gamma_LUT();
     change_default_settings();
-    // register leds setup structs entry points
-    app.lamp.pFireSimple = ledLampFireSimple.GetSettings();
+
     // force mode
     app.deck.mode = Settings::Deck::EMode::GameSpaceship;
 }
@@ -282,6 +284,14 @@ void change_default_settings()
     app.lamp.flik.isOn = true;
     app.lamp.flik.hue.spd = 15;
     app.lamp.flik.hue.ampl = 120;
+}
+
+
+void link_settings_pointers()
+{
+    // register leds setup structs entry points
+    app.lamp.pFireSimple = ledLampFireSimple.GetSettings();
+    app.deck.pGameStarship = gameSpaceship.GetSettings();
 }
 
 

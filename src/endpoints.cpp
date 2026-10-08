@@ -180,6 +180,29 @@ void on_deck_fire(HttpRequest& req, const char* ep)
     app.deck.mode = Settings::Deck::EMode::Fire;
 }
 
+void on_deck_gameStarship_bg_far(HttpRequest& req, const char* ep)
+{
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
+    if (app.deck.pGameStarship == nullptr) return;
+    const ui8 SZ = 16;
+    char buff[SZ]; float f; int i;
+
+    if (req.try_arg_s("col1", buff, SZ)) app.deck.pGameStarship->bgFar.color1 = html_2_rgb(buff);
+    if (req.try_arg_s("col2", buff, SZ)) app.deck.pGameStarship->bgFar.color2 = html_2_rgb(buff);
+
+    if (req.try_arg_f("speed", f) && isfinite(f) && f >= 0.0f) app.deck.pGameStarship->bgFar.speed = f;
+    if (req.try_arg_f("scale", f) && isfinite(f) && f >= 0.0f) app.deck.pGameStarship->bgFar.scale = f;
+    if (req.try_arg_f("soft", f) && isfinite(f) && f >= 0.0f) app.deck.pGameStarship->bgFar.softness = constrain(f, 0, 1);
+    if (req.try_arg_f("trsh", f) && isfinite(f) && f >= 0.0f) app.deck.pGameStarship->bgFar.treshold = constrain(f, 0, 1);
+    if (req.try_arg_f("detScale", f) && isfinite(f) && f >= 0.0f) app.deck.pGameStarship->bgFar.detailScale = f;
+    if (req.try_arg_f("detMult", f) && isfinite(f) && f >= 0.0f) app.deck.pGameStarship->bgFar.detailMult = constrain(f, 0, 1);
+
+    if (req.try_arg_i("opac", i)) app.deck.pGameStarship->bgFar.opacity8 = constrain(i, 0, 255);
+
+    app.deck.mode = Settings::Deck::EMode::GameSpaceship;
+}
+
+
 //.....................................................................................DEBUG-HANDLER
 
 void on_debug(HttpRequest& req, const char* ep)
@@ -227,6 +250,7 @@ void endpoints_init()
     asyncBackend_register_endpoint("/esp/deck/picker", on_deck_picker);
     asyncBackend_register_endpoint("/esp/deck/palette", on_deck_palette);
     asyncBackend_register_endpoint("/esp/deck/fire", on_deck_fire);
+    asyncBackend_register_endpoint("/esp/deck/starship/bg/far", on_deck_gameStarship_bg_far);
     asyncBackend_register_endpoint("/esp/deck", on_deck);
     // debug
     asyncBackend_register_endpoint("/esp/debug", on_debug);

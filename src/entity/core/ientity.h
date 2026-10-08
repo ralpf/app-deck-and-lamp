@@ -9,7 +9,6 @@
 // override to make a settings struct. Do not define ctor or assigment operator, we rely on build-in ones
 struct ISetting
 {
-    ui8  factor  = 255;             // some kind of apply factor for entity (aka brightness or transparency). Can be unused.
     ui16 version = 0;               // change in this struct shoudl bump the version
     virtual void Reset() = 0;    // implement to restore defaults
 };

@@ -2,6 +2,7 @@
 #include "../../core/ientity.h"
 #include "../../../ledsStrip.h"
 #include "gameObject.h"
+#include "settings.h"
 // a simple scroller about asteroids and enemies
 // use 50 fps for simplicty (fixed step movements)
 
@@ -11,51 +12,44 @@
 
 
 
-
-
-class SpaceshipGame : public IEntity
+namespace SpaceshipGame
 {
-    //....................................................................TYPE
-
-    public:
-    struct Settings : public ISetting
+    class Engine : public IEntity
     {
-        bool autoShoot = true;
-        void Reset() override { *this = Settings{}; }
+
+        //.....................................................................CTOR
+
+        public:
+        Engine(LedsStrip* pled) : pLeds(pled) { }
+
+        //...................................................................FIELDS
+
+        private:
+        static constexpr ui8 MaxGObjs = 64;
+
+        bool inited = false;
+
+        LedsStrip* pLeds;                       // used led strip
+        GObject*   gObjects[ MaxGObjs ];        // main objs array
+        ui8        countObjs = 0;
+
+        public:
+        Settings s;        // user vars
+
+        //.................................................................METHODS
+
+        public:                      // mimic unity name for order convetion
+        void Update() override;      // call per frame
+        // for interface
+        Settings* GetSettings() override { return &s; }
+        void AppendToJson(JsonWriter& jw) override { /* do nothing yet */ }
+
+
+        private:
+        void Awake();                // call once
+        void Draw();
     };
-
-    //.....................................................................CTOR
-
-    public:
-    SpaceshipGame(LedsStrip* pled) : pLeds(pled) { }
-
-    //...................................................................FIELDS
-
-    private:
-    static constexpr ui8 MaxGObjs = 64;
-
-    bool inited = false;
-
-    LedsStrip* pLeds;                       // used led strip
-    GObject*   gObjects[ MaxGObjs ];        // main objs array
-    ui8        countObjs = 0;
-
-    public:
-    Settings s;        // user vars
-
-    //.................................................................METHODS
-
-    public:                      // mimic unity name for order convetion
-    void Update() override;      // call per frame
-    // for interface
-    Settings* GetSettings() { return &s; }
-    void AppendToJson(JsonWriter& jw) override { /* do nothing yet */ }
-
-
-    private:
-    void Awake();                // call once
-    void Draw();
-};
+}
 
 
 
