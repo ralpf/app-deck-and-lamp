@@ -2,153 +2,97 @@
 #include <math.h>
 
 
+using Layer = SpaceshipGame::Settings::Background::Layer;
+
 
 //..........................................................................................HELPERS
 
 
-// x: position X for noise
-// scale: the size of the features
-// threshold: the distribution for colors
-// softness: the smoothness of edges
-float computeNoiseMask(float x, ui16 seed, float scale, float threshold, float softness)
+// scale: noise frequency, larger values make smaller features
+static float sampleNoise(float x, ui16 seed, float scale, float threshold, float softness)
 {
-    ui32 coordinate = (ui32)(x * scale * 256.0f);
-    float noise = inoise16(coordinate, (ui32)seed << 8) / 65535.0f;
-
+    double coordinate = fmod((double)x * scale * 256.0, 4294967296.0);
+    if (coordinate < 0) coordinate += 4294967296.0;
+    float noise = inoise16((ui32)coordinate, (ui32)seed << 8) / 65535.0f;
     float t = (noise - threshold) / max(softness, 0.0001f) + 0.5f;
     t = constrain(t, 0.0f, 1.0f);
-
     return t * t * (3.0f - 2.0f * t);
 }
 
 
-// static float background_contrast(float mask, float contrast)
-// {
-//     return constrain((mask - 0.5f) * max(contrast, 0.0f) + 0.5f, 0.0f, 1.0f);
-// }
+static float sampleLayer(float x, const Layer& layer)
+{
+    float mask = sampleNoise(x, layer.seed, layer.scale, layer.treshold, layer.softness);
+    ui16 seedDetail = layer.seed + 10000;
+    float detail = sampleNoise(x, seedDetail, layer.detailScale, 0.5f, 0.05f);
+    return mask * (1.0f - detail * layer.detailMult);
+}
 
 
-// static float background_mask(float coordinate, ui16 seed, float contrast)
-// {
-//     // each FastLED noise cell spans 256 coordinate units
-//     ui32 wholeCoordinate = (ui32)coordinate;
-//     ui16 x = (ui16)wholeCoordinate;
-//     float fraction = coordinate - wholeCoordinate;
-//     float left = inoise8(x, seed);
-//     float right = inoise8((ui16)(x + 1), seed);
-//     float mask = (left + (right - left) * fraction) / 255.0f;
-//     return background_contrast(mask, contrast);
-// }
+static CRGB composeSample(const CRGB rgb, const Layer& layer, float x)
+{
+    float mask = sampleLayer(x, layer);
+    CRGB color = blend(layer.color1, layer.color2, (ui8)(mask * 255.0f));
+
+    switch (layer.blendType)
+    {
+        case 0:     // uniform alpha
+        return blend(rgb, color, layer.opacity8);
+
+        case 1:     // clouds opaque, gaps transparent
+        return blend(rgb, color, (ui8)(mask * layer.opacity8));
+
+        default:    // unsupported mode, leave underlying layers visible
+        return rgb;
+    }
+}
 
 
-// static CRGB background_color(const BackgroundLayer& layerFar, float mask, float brightness)
-// {
-//     CRGB rgb = blend(layerFar.color1, layerFar.color2, (ui8)(mask * 255.0f));
-//     float strength = constrain(layerFar.intensity, 0.0f, 1.0f) * brightness;
-//     rgb.nscale8((ui8)(strength * 255.0f));
-//     return rgb;
-// }
+static CRGB composeLayer(const CRGB rgb, const Layer& layer, ui16 i)
+{
+    if (layer.opacity8 == 0) return rgb;
 
+    double whole = floor(layer.scroll);
+    float fract = (float)(layer.scroll - whole);
+    float x = (float)(whole + i);
 
-// static ui32 background_hash(ui32 value)
-// {
-//     // stable random values for each star cell, without per-frame randomization
-//     value ^= value >> 16;
-//     value *= 0x7FEB352D;
-//     value ^= value >> 15;
-//     value *= 0x846CA68B;
-//     value ^= value >> 16;
-//     return value;
-// }
+    CRGB left = composeSample(rgb, layer, x);
+    CRGB right = composeSample(rgb, layer, x + 1.0f);
 
+    return blend(left, right, (ui8)(fract * 255.0f));
+}
 
-using Layer = SpaceshipGame::Settings::BackgroundLayer;
 
 //......................................................................................METHODS-PUB
 
 void Background::Awake()
 {
-    // reset layers
-    scrollFar = 0;
-    scrollNear = 0;
+    if (pStg == nullptr) return;
+    pStg->lFar.scroll = 0;
+    pStg->lNear.scroll = 0;
 }
 
 
 void Background::Update()
 {
-    scrollFar += timeSrv.dt() * pStgFar->speed * 0.001;
-    scrollNear += timeSrv.dt() * pStgNear->speed * 0.001;
+    if (pStg == nullptr) return;
+    float dt = timeSrv.dt() * 0.001f;
+    pStg->lFar.scroll  += dt * pStg->lFar.speed;
+    pStg->lNear.scroll += dt * pStg->lNear.speed;
 }
 
 
 void Background::Draw(LedsStrip* pLeds)
 {
     if (pLeds == nullptr) return;
-    if (pStgFar == nullptr) return;
-    if (pStgNear == nullptr) return;
+    if (pStg == nullptr) return;
 
-    ui16 countLeds = pLeds->Count();
-    ui16 currSeed = seed + 333;
-    ui16 seedDetail = currSeed + 10000;
-    Layer& layerFar = *pStgFar;
-
-    // ==================== far background
-    double whole = floor(scrollFar);
-    float fraction = (float)(scrollFar - whole);
-
-    for (ui16 i = 0; i < countLeds; ++i)
+    for (ui16 i = 0; i < pLeds->Count(); ++i)
     {
-        float x = (float)(whole + i);
-        float left = computeNoiseMask(x, currSeed, layerFar.scale, layerFar.treshold, layerFar.softness);
-        float right = computeNoiseMask(x + 1.0f, currSeed, layerFar.scale, layerFar.treshold, layerFar.softness);
-        // carve details into color2
-        float detailLeft = computeNoiseMask(x, seedDetail, layerFar.detailScale, 0.5f, 0.05f);
-        float detailRight = computeNoiseMask(x + 1.0f, seedDetail, layerFar.detailScale, 0.5f, 0.05f);
-
-        left  *= 1.0f - detailLeft  * layerFar.detailMult;
-        right *= 1.0f - detailRight * layerFar.detailMult;
-        // retain smooth movement
-        float f = left + (right - left) * fraction;
-        // the color
-        CRGB rgb = blend(layerFar.color1, layerFar.color2, (ui8)(f * 255.0f));
-        // apply opacity
-        rgb.nscale8(layerFar.opacity8);
-        // apply resulting color
+        CRGB rgb = CRGB::Black;
+        rgb = composeLayer(rgb, pStg->lFar, i);
+        rgb = composeLayer(rgb, pStg->lNear, i);
+        // apply color
         pLeds->SetColor(rgb, i);
     }
-
-    // ==================== near background
-    whole = floor(scrollNear);
-    fraction = (float)(scrollNear - whole);
-
-    currSeed = seed + 18349;
-    seedDetail = currSeed + 10000;
-    Layer& layerNear = *pStgNear;
-
-    for (ui16 i = 0; i < countLeds; ++i)
-    {
-        float x = (float)(whole + i);
-        float left = computeNoiseMask(x, currSeed, layerNear.scale, layerNear.treshold, layerNear.softness);
-        float right = computeNoiseMask(x + 1.0f, currSeed, layerNear.scale, layerNear.treshold, layerNear.softness);
-        // carve details into color2
-        float detailLeft = computeNoiseMask(x, seedDetail, layerNear.detailScale, 0.5f, 0.05f);
-        float detailRight = computeNoiseMask(x + 1.0f, seedDetail, layerNear.detailScale, 0.5f, 0.05f);
-
-        left  *= 1.0f - detailLeft  * layerNear.detailMult;
-        right *= 1.0f - detailRight * layerNear.detailMult;
-        // retain smooth movement
-        float f = left + (right - left) * fraction;
-        // the color
-        CRGB rgb = blend(layerNear.color1, layerNear.color2, (ui8)(f * 255.0f));
-        // apply opacity
-        rgb.nscale8(layerNear.opacity8);
-        // apply resulting color
-        pLeds->SetColor(rgb, i);
-    }
-
 }
-
-
-//......................................................................................METHODS-PRV
-
-

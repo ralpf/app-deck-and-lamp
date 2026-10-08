@@ -24,7 +24,7 @@
 
 
 
-#define VERSION "0.1.03"
+#define VERSION "0.1.05"
 #define LED_LAMP_PIN   14          // GPIO14 data pin
 #define LED_LAMP_COUNT 12          // led ring of 6x2
 #define LED_DECK_PIN   26
@@ -75,7 +75,9 @@ void setup()
     SPrint(  "\n---------------------[[ + TV Console supp ]]----------------------");
     SPrint("                                                     Version %s\n", VERSION);
 
-    link_settings_pointers();   // do this before backend starts
+    // has to be done before backend starts
+    gameSpaceship.s.Reset();
+    link_settings_pointers();
 
     asyncBackend_init();
     endpoints_init();

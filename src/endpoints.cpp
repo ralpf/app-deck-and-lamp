@@ -180,25 +180,42 @@ void on_deck_fire(HttpRequest& req, const char* ep)
     app.deck.mode = Settings::Deck::EMode::Fire;
 }
 
+
+void update_deck_gameStarship_layer(HttpRequest& req, SpaceshipGame::Settings::Background::Layer& layer)
+{
+    const ui8 SZ = 16;
+    char buff[SZ]; float f; int i;
+
+    if (req.try_arg_s("col1", buff, SZ)) layer.color1 = html_2_rgb(buff);
+    if (req.try_arg_s("col2", buff, SZ)) layer.color2 = html_2_rgb(buff);
+
+    if (req.try_arg_f("speed", f) && isfinite(f) && f >= 0.0f) layer.speed = f;
+    if (req.try_arg_f("scale", f) && isfinite(f) && f >= 0.0f) layer.scale = f;
+    if (req.try_arg_f("soft", f) && isfinite(f) && f >= 0.0f) layer.softness = constrain(f, 0, 1);
+    if (req.try_arg_f("trsh", f) && isfinite(f) && f >= 0.0f) layer.treshold = constrain(f, 0, 1);
+    if (req.try_arg_f("detscale", f) && isfinite(f) && f >= 0.0f) layer.detailScale = f;
+    if (req.try_arg_f("detmult", f) && isfinite(f) && f >= 0.0f) layer.detailMult = constrain(f, 0, 1);
+
+    if (req.try_arg_i("opac", i)) layer.opacity8 = constrain(i, 0, 255);
+}
+
+
 void on_deck_gameStarship_bg_far(HttpRequest& req, const char* ep)
 {
     if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
     if (app.deck.pGameStarship == nullptr) return;
-    const ui8 SZ = 16;
-    char buff[SZ]; float f; int i;
 
-    if (req.try_arg_s("col1", buff, SZ)) app.deck.pGameStarship->bgFar.color1 = html_2_rgb(buff);
-    if (req.try_arg_s("col2", buff, SZ)) app.deck.pGameStarship->bgFar.color2 = html_2_rgb(buff);
+    update_deck_gameStarship_layer(req, app.deck.pGameStarship->bg.lFar);
+    app.deck.mode = Settings::Deck::EMode::GameSpaceship;
+}
 
-    if (req.try_arg_f("speed", f) && isfinite(f) && f >= 0.0f) app.deck.pGameStarship->bgFar.speed = f;
-    if (req.try_arg_f("scale", f) && isfinite(f) && f >= 0.0f) app.deck.pGameStarship->bgFar.scale = f;
-    if (req.try_arg_f("soft", f) && isfinite(f) && f >= 0.0f) app.deck.pGameStarship->bgFar.softness = constrain(f, 0, 1);
-    if (req.try_arg_f("trsh", f) && isfinite(f) && f >= 0.0f) app.deck.pGameStarship->bgFar.treshold = constrain(f, 0, 1);
-    if (req.try_arg_f("detScale", f) && isfinite(f) && f >= 0.0f) app.deck.pGameStarship->bgFar.detailScale = f;
-    if (req.try_arg_f("detMult", f) && isfinite(f) && f >= 0.0f) app.deck.pGameStarship->bgFar.detailMult = constrain(f, 0, 1);
 
-    if (req.try_arg_i("opac", i)) app.deck.pGameStarship->bgFar.opacity8 = constrain(i, 0, 255);
+void on_deck_gameStarship_bg_near(HttpRequest& req, const char* ep)
+{
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
+    if (app.deck.pGameStarship == nullptr) return;
 
+    update_deck_gameStarship_layer(req, app.deck.pGameStarship->bg.lNear);
     app.deck.mode = Settings::Deck::EMode::GameSpaceship;
 }
 
@@ -251,6 +268,7 @@ void endpoints_init()
     asyncBackend_register_endpoint("/esp/deck/palette", on_deck_palette);
     asyncBackend_register_endpoint("/esp/deck/fire", on_deck_fire);
     asyncBackend_register_endpoint("/esp/deck/starship/bg/far", on_deck_gameStarship_bg_far);
+    asyncBackend_register_endpoint("/esp/deck/starship/bg/near", on_deck_gameStarship_bg_near);
     asyncBackend_register_endpoint("/esp/deck", on_deck);
     // debug
     asyncBackend_register_endpoint("/esp/debug", on_debug);
