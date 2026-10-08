@@ -12,10 +12,10 @@ class Ship : public GObject
     float finalPos = 0;
     // flare
     float flareLength = 10.0f;
-    float flareFlickSpeed = 1.8f;
+    float flareFlickSpeed = 1.5f;
     ui32  flareLastMs = 0;
-    ui8   flareMin = 6;
-    ui8   flareMax = 12;
+    ui8   flareMin = 3;
+    ui8   flareMax = 10;
 
 
 

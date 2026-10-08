@@ -46,7 +46,7 @@ namespace SpaceshipGame
 
         for (int i = 0; i < countObjs; ++i)
         {
-            if (i == 1) continue;  // delete, don't draw player
+            //if (i == 1) continue;  // delete, don't draw player
             gObjects[i]->Draw(pLeds);
         }
     }

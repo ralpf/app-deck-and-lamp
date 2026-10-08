@@ -220,6 +220,18 @@ void on_deck_gameStarship_bg_near(HttpRequest& req, const char* ep)
 }
 
 
+void on_deck_gameStarship_bg_glob(HttpRequest& req, const char* ep)
+{
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
+    if (app.deck.pGameStarship == nullptr) return;
+
+    float f;
+    if (req.try_arg_f("speed", f) && isfinite(f) && f >= 0.0f) app.deck.pGameStarship->bg.globalSpeed = f;
+
+    app.deck.mode = Settings::Deck::EMode::GameSpaceship;
+}
+
+
 //.....................................................................................DEBUG-HANDLER
 
 void on_debug(HttpRequest& req, const char* ep)
@@ -269,6 +281,7 @@ void endpoints_init()
     asyncBackend_register_endpoint("/esp/deck/fire", on_deck_fire);
     asyncBackend_register_endpoint("/esp/deck/starship/bg/far", on_deck_gameStarship_bg_far);
     asyncBackend_register_endpoint("/esp/deck/starship/bg/near", on_deck_gameStarship_bg_near);
+    asyncBackend_register_endpoint("/esp/deck/starship/bg", on_deck_gameStarship_bg_glob);
     asyncBackend_register_endpoint("/esp/deck", on_deck);
     // debug
     asyncBackend_register_endpoint("/esp/debug", on_debug);

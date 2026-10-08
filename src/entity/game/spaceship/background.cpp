@@ -29,9 +29,17 @@ static float sampleLayer(float x, const Layer& layer)
 }
 
 
-static CRGB composeSample(const CRGB rgb, const Layer& layer, float x)
+static CRGB composeLayer(const CRGB rgb, const Layer& layer, ui16 i)
 {
-    float mask = sampleLayer(x, layer);
+    if (layer.opacity8 == 0) return rgb;
+
+    double whole = floor(layer.scroll);
+    float fract = (float)(layer.scroll - whole);
+    float x = (float)(whole + i);
+
+    float left = sampleLayer(x, layer);
+    float right = sampleLayer(x + 1.0f, layer);
+    float mask = left + (right - left) * fract;
     CRGB color = blend(layer.color1, layer.color2, (ui8)(mask * 255.0f));
 
     switch (layer.blendType)
@@ -48,21 +56,6 @@ static CRGB composeSample(const CRGB rgb, const Layer& layer, float x)
 }
 
 
-static CRGB composeLayer(const CRGB rgb, const Layer& layer, ui16 i)
-{
-    if (layer.opacity8 == 0) return rgb;
-
-    double whole = floor(layer.scroll);
-    float fract = (float)(layer.scroll - whole);
-    float x = (float)(whole + i);
-
-    CRGB left = composeSample(rgb, layer, x);
-    CRGB right = composeSample(rgb, layer, x + 1.0f);
-
-    return blend(left, right, (ui8)(fract * 255.0f));
-}
-
-
 //......................................................................................METHODS-PUB
 
 void Background::Awake()
@@ -76,7 +69,7 @@ void Background::Awake()
 void Background::Update()
 {
     if (pStg == nullptr) return;
-    float dt = timeSrv.dt() * 0.001f;
+    float dt = timeSrv.dt() * 0.001f * pStg->globalSpeed;
     pStg->lFar.scroll  += dt * pStg->lFar.speed;
     pStg->lNear.scroll += dt * pStg->lNear.speed;
 }

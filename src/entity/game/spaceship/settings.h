@@ -31,6 +31,7 @@ namespace SpaceshipGame
 
             Layer  lNear;
             Layer  lFar;
+            float  globalSpeed = 1.0f;
 
         };
 
@@ -48,7 +49,7 @@ namespace SpaceshipGame
             bg.lFar.scale = 5.0f;
             bg.lFar.treshold = 0.5f;
             bg.lFar.softness = 0.5f;
-            bg.lFar.speed = 3.0f;
+            bg.lFar.speed = 6.0f;
             bg.lFar.detailScale = 100.0f;
             bg.lFar.detailMult = 0.6f;
             bg.lFar.opacity8 = 64;
@@ -60,11 +61,11 @@ namespace SpaceshipGame
             // near layer
             bg.lNear.scale = 10.0f;
             bg.lNear.treshold = 0.6f;
-            bg.lNear.softness = 0.6f;
-            bg.lNear.speed = 6.0f;
+            bg.lNear.softness = 0.4f;
+            bg.lNear.speed = 12.0f;
             bg.lNear.detailScale = 100.0f;
-            bg.lNear.detailMult = 0.1f;
-            bg.lNear.opacity8 = 64;
+            bg.lNear.detailMult = 0.31f;
+            bg.lNear.opacity8 = 160;
             bg.lNear.blendType = 1;
             bg.lNear.color1 = CRGB::Black;
             bg.lNear.color2 = CRGB::Green;

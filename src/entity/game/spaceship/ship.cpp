@@ -5,14 +5,14 @@
 
 void Ship::Awake()
 {
-    pos = 50;
-    pxBody[0] = CRGB(170, 160, 160);    // tail
-    pxBody[1] = CRGB(160, 160, 160);
+    pos = 30;
+    pxBody[0] = CRGB(120, 100, 100);    // tail
+    pxBody[1] = CRGB(120, 100, 100);
     pxBody[2] = CRGB(210, 210, 210);
     pxBody[3] = CRGB(210, 210, 210);
     pxBody[4] = CRGB(210, 210, 210);
-    pxBody[5] = CRGB(170, 170, 190);
-    pxBody[6] = CRGB(170, 170, 200);    // head
+    pxBody[5] = CRGB(100, 100, 110);
+    pxBody[6] = CRGB(100, 100, 110);    // head
 }
 
 
@@ -21,7 +21,7 @@ void Ship::Update()
 {
     // ship
     float secondsElapsed = timeSrv.time();
-    float offset = sinf(secondsElapsed * speed) * 30;
+    float offset = sinf(secondsElapsed * speed) * 20;
     finalPos = pos + offset;
     // flare
     if (timeSrv.now() - flareLastMs >= 100 / flareFlickSpeed)
