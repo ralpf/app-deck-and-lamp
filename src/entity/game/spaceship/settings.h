@@ -27,11 +27,12 @@ namespace SpaceshipGame
                 // runtime, do not serialize
                 ui16   seed;
                 double scroll;
+                float  prevSample;  // used for caching
             };
 
             Layer  lNear;
             Layer  lFar;
-            float  globalSpeed = 1.0f;
+            float  globalSpeed = 3.0f;
 
         };
 

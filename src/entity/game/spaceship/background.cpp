@@ -11,16 +11,20 @@ using Layer = SpaceshipGame::Settings::Background::Layer;
 // scale: noise frequency, larger values make smaller features
 static float sampleNoise(float x, ui16 seed, float scale, float threshold, float softness)
 {
-    double coordinate = fmod((double)x * scale * 256.0, 4294967296.0);
-    if (coordinate < 0) coordinate += 4294967296.0;
-    float noise = inoise16((ui32)coordinate, (ui32)seed << 8) / 65535.0f;
+    double coordX = (double)x * scale * 256.0;
+    if (coordX < 0 || coordX >= 4294967296.0)
+    {
+        coordX = fmod(coordX, 4294967296.0);
+        if (coordX < 0) coordX += 4294967296.0;
+    }
+    float noise = inoise16((ui32)coordX, (ui32)seed << 8) / 65535.0f;
     float t = (noise - threshold) / max(softness, 0.0001f) + 0.5f;
     t = constrain(t, 0.0f, 1.0f);
     return t * t * (3.0f - 2.0f * t);
 }
 
 
-static float sampleLayer(float x, const Layer& layer)
+static float sampleLayer(float x, Layer& layer)
 {
     float mask = sampleNoise(x, layer.seed, layer.scale, layer.treshold, layer.softness);
     ui16 seedDetail = layer.seed + 10000;
@@ -29,7 +33,7 @@ static float sampleLayer(float x, const Layer& layer)
 }
 
 
-static CRGB composeLayer(const CRGB rgb, const Layer& layer, ui16 i)
+static CRGB composeLayer(const CRGB rgb, Layer& layer, ui16 i)
 {
     if (layer.opacity8 == 0) return rgb;
 
@@ -37,8 +41,10 @@ static CRGB composeLayer(const CRGB rgb, const Layer& layer, ui16 i)
     float fract = (float)(layer.scroll - whole);
     float x = (float)(whole + i);
 
-    float left = sampleLayer(x, layer);
+    float left = i == 0 ? sampleLayer(x, layer) : layer.prevSample;
     float right = sampleLayer(x + 1.0f, layer);
+    layer.prevSample = right;   // cache, reduce sampleLayers from 512 to 256
+
     float mask = left + (right - left) * fract;
     CRGB color = blend(layer.color1, layer.color2, (ui8)(mask * 255.0f));
 
