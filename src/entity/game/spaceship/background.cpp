@@ -43,7 +43,7 @@ static CRGB composeLayer(const CRGB rgb, Layer& layer, ui16 i)
 
     float left = i == 0 ? sampleLayer(x, layer) : layer.prevSample;
     float right = sampleLayer(x + 1.0f, layer);
-    layer.prevSample = right;   // cache, reduce sampleLayers from 512 to 256
+    layer.prevSample = right;   // cache, reduce sampleLayers from 512 to 258
 
     float mask = left + (right - left) * fract;
     CRGB color = blend(layer.color1, layer.color2, (ui8)(mask * 255.0f));
@@ -68,6 +68,7 @@ void Background::Awake()
 {
     if (pStg == nullptr) return;
     pStg->lFar.scroll = 0;
+    pStg->lMid.scroll = 0;
     pStg->lNear.scroll = 0;
 }
 
@@ -78,6 +79,7 @@ void Background::Update()
     float dt = timeSrv.dt() * 0.001f * pStg->globalSpeed;
     pStg->lFar.scroll  += dt * pStg->lFar.speed;
     pStg->lNear.scroll += dt * pStg->lNear.speed;
+    pStg->lMid.scroll += dt * pStg->lMid.speed;
 }
 
 
@@ -89,7 +91,8 @@ void Background::Draw(LedsStrip* pLeds)
     for (ui16 i = 0; i < pLeds->Count(); ++i)
     {
         CRGB rgb = CRGB::Black;
-        rgb = composeLayer(rgb, pStg->lFar, i);
+        rgb = composeLayer(rgb, pStg->lFar,  i);
+        rgb = composeLayer(rgb, pStg->lMid,  i);
         rgb = composeLayer(rgb, pStg->lNear, i);
         // apply color
         pLeds->SetColor(rgb, i);

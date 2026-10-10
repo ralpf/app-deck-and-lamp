@@ -1,5 +1,6 @@
 #include "endpoints.h"
 #include "settings.h"
+#include "dev/devdiag.h"
 
 #include <asyncBackend.h>
 #include <httpRequest.h>
@@ -220,6 +221,16 @@ void on_deck_gameStarship_bg_near(HttpRequest& req, const char* ep)
 }
 
 
+void on_deck_gameStarship_bg_mid(HttpRequest& req, const char* ep)
+{
+    if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
+    if (app.deck.pGameStarship == nullptr) return;
+
+    update_deck_gameStarship_layer(req, app.deck.pGameStarship->bg.lMid);
+    app.deck.mode = Settings::Deck::EMode::GameSpaceship;
+}
+
+
 void on_deck_gameStarship_bg_glob(HttpRequest& req, const char* ep)
 {
     if (kPrintDebug) SPrint("ENDPOINT: %s", ep);
@@ -237,6 +248,14 @@ void on_deck_gameStarship_bg_glob(HttpRequest& req, const char* ep)
 void on_debug(HttpRequest& req, const char* ep)
 {
     app.flagPrintJson = true;
+}
+
+void on_statistic(HttpRequest& req, const char* ep)
+{
+    char buff[512];
+    DevDiag dd;
+    dd.PrintBuffer(buff, 512);
+    req.send(200, "text/plain", buff);
 }
 
 void on_sync_state(HttpRequest& req, const char* ep)
@@ -281,10 +300,12 @@ void endpoints_init()
     asyncBackend_register_endpoint("/esp/deck/fire", on_deck_fire);
     asyncBackend_register_endpoint("/esp/deck/starship/bg/far", on_deck_gameStarship_bg_far);
     asyncBackend_register_endpoint("/esp/deck/starship/bg/near", on_deck_gameStarship_bg_near);
+    asyncBackend_register_endpoint("/esp/deck/starship/bg/mid", on_deck_gameStarship_bg_mid);
     asyncBackend_register_endpoint("/esp/deck/starship/bg", on_deck_gameStarship_bg_glob);
     asyncBackend_register_endpoint("/esp/deck", on_deck);
     // debug
     asyncBackend_register_endpoint("/esp/debug", on_debug);
+    asyncBackend_register_endpoint("/esp/stats", on_statistic);
     // sync
     asyncBackend_register_endpoint("/esp/sync/state", on_sync_state);
     asyncBackend_register_endpoint("/esp/sync/palette", on_sync_available_palletes);

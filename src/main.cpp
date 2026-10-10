@@ -10,7 +10,8 @@
 #include "perlin.h"
 #include "deckFX/comet.h"
 #include "deckFX/fireDeck.h"
-#include "entity/ledfx/lefFxHeaders.h"
+#include "entity/ledfx/spacepilot.h"
+#include "entity/ledfx/ledFxHeaders.h"
 
 #include "entity/game/spaceship/engine.h"
 
@@ -40,9 +41,10 @@ LedsHardware<LED_LAMP_PIN, LED_LAMP_COUNT> _ledsLampHard;
 LedsStrip& ledsDeck = _ledsDeckHard;
 LedsStrip& ledsLamp = _ledsLampHard;
 // some FX
+FireSimple ledLampFireSimple(ledsLamp);
 Comet ledsDeckComet(ledsDeck);
 FireDeck ledsDeckFire(ledsDeck);
-FireSimple ledLampFireSimple(ledsLamp);
+SpacePilot ledsDeckSpacePilot(ledsDeck);
 // some games
 SpaceshipGame::Engine gameSpaceship(&ledsDeck);
 

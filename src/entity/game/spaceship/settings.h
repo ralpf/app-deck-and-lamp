@@ -31,6 +31,7 @@ namespace SpaceshipGame
             };
 
             Layer  lNear;
+            Layer  lMid;
             Layer  lFar;
             float  globalSpeed = 3.0f;
 
@@ -72,6 +73,19 @@ namespace SpaceshipGame
             bg.lNear.color2 = CRGB::Green;
             bg.lNear.seed = 18466;
             bg.lNear.scroll = 0;
+            // mid layer
+            bg.lMid.scale = 30.0f;
+            bg.lMid.treshold = 0.65f;
+            bg.lMid.softness = 0.4f;
+            bg.lMid.speed = 9.0f;
+            bg.lMid.detailScale = 100.0f;
+            bg.lMid.detailMult = 0.31f;
+            bg.lMid.opacity8 = 60;
+            bg.lMid.blendType = 1;
+            bg.lMid.color1 = CRGB::Black;
+            bg.lMid.color2 = CRGB(255, 128, 0);
+            bg.lMid.seed = 58766;
+            bg.lMid.scroll = 0;
         }
     };
 };
